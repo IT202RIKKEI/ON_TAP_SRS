@@ -1,0 +1,2815 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ôn Thi Trắc Nghiệm SAD - PTIT</title>
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --bg: #f8fafc;
+        --card-bg: #ffffff;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --correct: #16a34a;
+        --wrong: #dc2626;
+        --correct-bg: #dcfce7;
+        --wrong-bg: #fee2e2;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        padding-bottom: 80px;
+      }
+      header {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        padding: 12px 16px;
+      }
+      .header-content {
+        max-width: 680px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      h1 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .score-badge {
+        background: #eff6ff;
+        color: var(--primary);
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        border: 1px solid #bfdbfe;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+      select,
+      button {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        color: var(--text);
+        font-size: 0.85rem;
+        outline: none;
+      }
+      select {
+        flex: 1;
+      }
+      button.btn-reset {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      main {
+        max-width: 680px;
+        margin: 16px auto;
+        padding: 0 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .q-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      }
+      .q-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+      }
+      .q-num {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+      }
+      .q-topic {
+        font-size: 0.75rem;
+        background: #f1f5f9;
+        color: var(--text-muted);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .q-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.45;
+        margin-bottom: 12px;
+      }
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .opt-btn {
+        width: 100%;
+        text-align: left;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        font-size: 0.88rem;
+        line-height: 1.35;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        color: var(--text);
+      }
+      .opt-btn:active {
+        transform: scale(0.99);
+      }
+      .opt-btn.correct {
+        background: var(--correct-bg) !important;
+        border-color: var(--correct) !important;
+        color: #14532d !important;
+        font-weight: 600;
+      }
+      .opt-btn.wrong {
+        background: var(--wrong-bg) !important;
+        border-color: var(--wrong) !important;
+        color: #7f1d1d !important;
+      }
+      .explanation {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border-left: 3px solid var(--primary);
+        font-size: 0.82rem;
+        line-height: 1.4;
+        color: #334155;
+        display: none;
+      }
+    
+      /* Mobile-first quiz mode */
+      body { padding-bottom: 24px; }
+      .header-content, main { max-width: 720px; }
+      .controls { display:grid; grid-template-columns: 1fr 100px 82px; gap:8px; }
+      .quiz-shell { display:flex; flex-direction:column; gap:12px; }
+      .progress-wrap { height:7px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+      .progress-bar { height:100%; width:0; background:var(--primary); transition:width .2s ease; }
+      .q-card { margin-top:0; }
+      .q-title { font-size:1.03rem; }
+      .opt-btn:disabled { cursor:default; opacity:1; }
+      .explanation.show { display:block; }
+      .nav-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .nav-row button { font-weight:700; min-height:44px; }
+      .hint { text-align:center; color:var(--text-muted); font-size:.76rem; line-height:1.35; }
+      .result-box { display:none; text-align:center; background:#fff; border:1px solid var(--border); border-radius:12px; padding:22px 16px; }
+      .result-big { font-size:2.4rem; font-weight:800; color:var(--primary); margin:6px; }
+      .result-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+      .result-stat { background:#f8fafc; border-radius:9px; padding:10px 4px; font-size:.78rem; color:var(--text-muted); }
+      .result-stat b { display:block; color:var(--text); font-size:1.1rem; }
+      @media(max-width:560px){ .controls{grid-template-columns:1fr 92px 70px;} .q-title{font-size:1rem;} .q-card{padding:14px;} }
+</style>
+  </head>
+  <body>
+<header>
+  <div class="header-content">
+    <div class="title-row">
+      <h1>Phân Tích & Thiết Kế HT (SAD)</h1>
+      <div class="score-badge" id="scoreDisplay">0 đúng · 0/20</div>
+    </div>
+    <div class="controls">
+      <select id="filterTopic">
+        <option value="all">Tất cả chuyên đề</option>
+        <option value="Tổng quan & Khảo sát (Session 1-4)">Session 01-04: Tổng quan & Khảo sát</option>
+        <option value="Use Case & Activity (Session 5-6)">Session 05-06: Use Case & Activity</option>
+        <option value="Class Diagram (Session 7-8)">Session 07-08: Class Diagram</option>
+        <option value="Sequence Diagram (Session 9-10)">Session 09-10: Sequence Diagram</option>
+        <option value="UI/UX Wireframe (Session 13-14)">Session 13-14: UI/UX Wireframe</option>
+        <option value="ERD & CSDL (Session 15-16)">Session 15-16: ERD & CSDL</option>
+        <option value="SRS & Kiến trúc (Session 17-18)">Session 17-18: SRS & Kiến trúc</option>
+      </select>
+      <select id="quizCount" title="Số câu">
+        <option value="20">20 câu</option><option value="50">50 câu</option><option value="100">100 câu</option><option value="all">Tất cả</option>
+      </select>
+      <button class="btn-reset" id="resetBtn">Đổi bộ</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="quiz-shell">
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="q-card" id="quizCard">
+      <div class="q-header"><span class="q-num" id="qNum">Câu 1/20</span><span class="q-topic" id="qTopic"></span></div>
+      <div class="q-title" id="qTitle"></div>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation"></div>
+    </div>
+    <div class="nav-row"><button id="prevBtn">← Câu trước</button><button class="btn-reset" id="nextBtn">Câu tiếp →</button></div>
+    <div class="hint">A/B/C/D để chọn nhanh · ←/→ để chuyển câu · Chọn đáp án xong xem ngay giải thích</div>
+    <div class="result-box" id="resultBox">
+      <h2>🎉 Hoàn thành lượt ôn</h2>
+      <div class="result-big" id="resultScore">0/20</div>
+      <div id="resultText"></div>
+      <div class="result-stats"><div class="result-stat"><b id="resultCorrect">0</b>Đúng</div><div class="result-stat"><b id="resultWrong">0</b>Sai</div><div class="result-stat"><b id="resultPct">0%</b>Tỷ lệ</div></div>
+      <button class="btn-reset" id="restartBtn">🔄 Làm bộ khác</button>
+      <p class="hint" style="margin-top:10px">Tổng ngân hàng: <span id="totalQuestions">200</span> câu.</p>
+    </div>
+  </div>
+</main>
+<script>
+const baseQuestions = [
+        // Session 01 - 04
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Mục đích chính của giai đoạn Phân tích hệ thống (System Analysis) là gì?",
+          options: [
+            "Xác định hệ thống cần PHẢI LÀM GÌ (What the system should do)",
+            "Xác định hệ thống được XÂY DỰNG NHƯ THẾ NÀO (How the system will be built)",
+            "Trực tiếp viết mã nguồn và triển khai kiểm thử cơ sở dữ liệu",
+            "Bảo trì và vận hành hệ thống sau khi bàn giao cho khách hàng",
+          ],
+          ans: 0,
+          exp: "Giai đoạn Phân tích (Analysis) tập trung vào 'What' (Hệ thống làm gì để giải quyết bài toán nghiệp vụ), còn giai đoạn Thiết kế (Design) mới tập trung vào 'How' (Xây dựng như thế nào).",
+        },
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Yêu cầu nào dưới đây thuộc loại Yêu cầu phi chức năng (Non-Functional Requirement - NFR)?",
+          options: [
+            "Hệ thống cho phép sinh viên xem thời khóa biểu cá nhân",
+            "Hệ thống phản hồi kết quả tìm kiếm trong thời gian dưới 2 giây với 500 người dùng đồng thời",
+            "Hệ thống gửi email xác nhận đặt cọc thành công cho khách hàng",
+            "Hệ thống cho phép khách hàng hủy phòng trước 48 giờ",
+          ],
+          ans: 1,
+          exp: "NFR mô tả thuộc tính chất lượng (hiệu năng, độ sẵn sàng, bảo mật...). Tiêu chí phản hồi dưới 2 giây là NFR về Hiệu năng (Performance).",
+        },
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Kỹ thuật thu thập yêu cầu nào phù hợp nhất khi cần thu thập ý kiến định lượng từ số lượng lớn người dùng ở nhiều địa điểm khác nhau?",
+          options: [
+            "Phỏng vấn sâu (In-depth Interview)",
+            "Bảng khảo sát / Bảng câu hỏi (Questionnaire/Survey)",
+            "Quan sát trực tiếp tại hiện trường (Observation)",
+            "Phân tích tài liệu nghiệp vụ có sẵn (Document Analysis)",
+          ],
+          ans: 1,
+          exp: "Khảo sát / Bảng câu hỏi cho phép tiếp cận tệp người dùng lớn với chi phí thấp và cung cấp dữ liệu định lượng thống kê nhanh chóng.",
+        },
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Một Yêu cầu phi chức năng chuẩn bắt buộc phải đảm bảo tiêu chí cốt lõi nào sau đây?",
+          options: [
+            "Phải mô tả đầy đủ chức năng màn hình chi tiết",
+            "Phải có tiêu chí đo lường định lượng được (Measurable / Testable)",
+            "Phải do lập trình viên trực tiếp chỉ định công nghệ",
+            "Không cần kiểm tra khi bàn giao nghiệm thu",
+          ],
+          ans: 1,
+          exp: "NFR phải đo lường được bằng số liệu cụ thể (thời gian, phần trăm uptime, chuẩn mã hóa...) để có thể kiểm thử và nghiệm thu.",
+        },
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Quy tắc nghiệp vụ (Business Rule - BR) được hiểu chính xác nhất là gì?",
+          options: [
+            "Một đoạn code logic viết trên tầng Service",
+            "Một ràng buộc, chính sách hoặc điều kiện bắt buộc chi phối hoạt động của doanh nghiệp/tổ chức",
+            "Giao diện người dùng trên điện thoại di động",
+            "Tên gọi khác của sơ đồ cơ sở dữ liệu quan hệ",
+          ],
+          ans: 1,
+          exp: "BR là quy tắc/chính sách cốt lõi của bài toán thực tế (ví dụ: 'chỉ cho đặt tối đa 14 đêm', 'đặt cọc 30%'). Hệ thống phần mềm phải tuân thủ BR.",
+        },
+
+        // Session 05 - 06: Use Case & Activity
+        {
+          topic: "Use Case & Activity (Session 5-6)",
+          q: "Trong Use Case Diagram, quan hệ <<include>> giữa Use Case A và Use Case B có ý nghĩa gì?",
+          options: [
+            "Use Case A tùy chọn gọi Use Case B khi có điều kiện phát sinh",
+            "Use Case A luôn luôn bắt buộc phải thực thi Use Case B trong tiến trình của mình",
+            "Use Case B kế thừa toàn bộ thuộc tính và hành vi từ Use Case A",
+            "Use Case A và B hoàn toàn độc lập và không liên quan đến nhau",
+          ],
+          ans: 1,
+          exp: "<<include>> biểu diễn hành vi dùng chung bắt buộc. Khi Use Case cơ sở chạy thì Use Case được include bắt buộc phải chạy.",
+        },
+        {
+          topic: "Use Case & Activity (Session 5-6)",
+          q: "Quan hệ <<extend>> trong Use Case Diagram được kích hoạt khi nào?",
+          options: [
+            "Luôn luôn kích hoạt ở mọi lần chạy",
+            "Chỉ kích hoạt khi thỏa mãn một điều kiện ngoại lệ hoặc mở rộng cụ thể (Extension Point)",
+            "Kích hoạt khi người dùng đăng xuất khỏi hệ thống",
+            "Kích hoạt tự động ngay trước bước khởi tạo Use Case",
+          ],
+          ans: 1,
+          exp: "<<extend>> đại diện cho hành vi tùy chọn/phân nhánh, chỉ được chèn vào luồng chính khi điểm mở rộng (extension condition) được thỏa mãn.",
+        },
+        {
+          topic: "Use Case & Activity (Session 5-6)",
+          q: "Cổng thanh toán điện tử (Payment Gateway) đóng vai trò là Actor gì trong Use Case 'Đặt phòng/Đặt hàng'?",
+          options: [
+            "Primary Actor (Actor chính)",
+            "Secondary / Supporting Actor (Actor phụ/hỗ trợ)",
+            "Database Server",
+            "Use Case Controller",
+          ],
+          ans: 1,
+          exp: "Cổng thanh toán là hệ thống bên ngoài hỗ trợ hoàn tất mục tiêu giao dịch của Primary Actor, do đó nó là Secondary Actor.",
+        },
+        {
+          topic: "Use Case & Activity (Session 5-6)",
+          q: "Trong Activity Diagram, ký hiệu hình thoi (Diamond) dùng để thể hiện điều gì?",
+          options: [
+            "Điểm bắt đầu (Initial Node)",
+            "Điểm rẽ nhánh điều kiện (Decision Node) hoặc hợp nhất luồng (Merge Node)",
+            "Phân luồng song song (Fork Node)",
+            "Điểm kết thúc toàn bộ luồng hoạt động (Final Node)",
+          ],
+          ans: 1,
+          exp: "Hình thoi dùng làm Decision Node (rẽ nhánh có guard condition) hoặc Merge Node (gộp nhiều luồng rẽ nhánh lại).",
+        },
+        {
+          topic: "Use Case & Activity (Session 5-6)",
+          q: "Thanh đồng bộ (Fork/Join Node) trong Activity Diagram được biểu diễn bằng hình gì và có ý nghĩa gì?",
+          options: [
+            "Hình tròn rỗng biểu diễn hành động kết thúc",
+            "Một vạch kẻ ngang/dọc đậm biểu diễn chia nhánh hoặc đồng bộ các luồng thực thi song song",
+            "Hình chữ nhật bo tròn thể hiện trạng thái giao diện",
+            "Đường mũi tên nét đứt biểu diễn thông điệp bất đồng bộ",
+          ],
+          ans: 1,
+          exp: "Fork chia một luồng thành nhiều luồng chạy song song; Join chờ toàn bộ các luồng song song đó kết thúc để tiếp tục.",
+        },
+
+        // Session 07 - 08: Class Diagram
+        {
+          topic: "Class Diagram (Session 7-8)",
+          q: "Quan hệ Composition (Cấu thành) khác quan hệ Aggregation (Thu gom) ở điểm mấu chốt nào?",
+          options: [
+            "Trong Composition, vòng đời của đối tượng con gắn liền và phụ thuộc hoàn toàn vào đối tượng cha",
+            "Trong Composition, đối tượng con có thể tồn tại độc lập khi đối tượng cha bị hủy",
+            "Aggregation dùng hình thoi đặc màu đen, Composition dùng hình thoi rỗng",
+            "Hai quan hệ này hoàn toàn đồng nghĩa và có thể dùng thay thế cho nhau",
+          ],
+          ans: 0,
+          exp: "Composition (Hình thoi đen): Đối tượng cha chết thì con chết theo (ví dụ: Hóa đơn và Chi tiết hóa đơn). Aggregation (Hình thoi rỗng): Đối tượng con vẫn tồn tại độc lập.",
+        },
+        {
+          topic: "Class Diagram (Session 7-8)",
+          q: "Ký hiệu dấu gạch trừ (-) đứng trước một thuộc tính hoặc phương thức trong Class Diagram thể hiện mức truy cập nào?",
+          options: [
+            "Public (+)",
+            "Private (-)",
+            "Protected (#)",
+            "Package (~)",
+          ],
+          ans: 1,
+          exp: "Chuẩn UML: '+' là Public, '-' là Private, '#' là Protected, '~' là Package.",
+        },
+        {
+          topic: "Class Diagram (Session 7-8)",
+          q: "Quan hệ giữa 'Khoa' (Department) và 'Giảng viên' (Lecturer) - khi Khoa giải thể thì Giảng viên vẫn tồn tại trong trường - là quan hệ gì?",
+          options: [
+            "Composition",
+            "Aggregation",
+            "Generalization (Kế thừa)",
+            "Realization",
+          ],
+          ans: 1,
+          exp: "Vì Giảng viên vẫn tồn tại độc lập khi Khoa bị hủy, đây là quan hệ Aggregation (Thu gom - hình thoi rỗng).",
+        },
+
+        // Session 09 - 10: Sequence Diagram
+        {
+          topic: "Sequence Diagram (Session 9-10)",
+          q: "Khung kết hợp (Combined Fragment) 'alt' trong Sequence Diagram được sử dụng khi nào?",
+          options: [
+            "Khi cần thực hiện một vòng lặp nhiều lần cho danh sách phần tử",
+            "Khi biểu diễn các nhánh điều kiện loại trừ lẫn nhau (tương đương if-else hoặc switch-case)",
+            "Khi cần thực hiện một đoạn mã song song đồng thời",
+            "Khi biểu diễn một hành vi tùy chọn chỉ có if mà không có else",
+          ],
+          ans: 1,
+          exp: "'alt' viết tắt của Alternatives, chia thành nhiều ngăn có guard condition (tương đương if - else if - else).",
+        },
+        {
+          topic: "Sequence Diagram (Session 9-10)",
+          q: "Trong Sequence Diagram, thông điệp trả về (Reply / Return message) được vẽ bằng ký hiệu chuẩn nào?",
+          options: [
+            "Đường nét liền có mũi tên đặc (Solid line with filled arrow)",
+            "Đường nét đứt có mũi tên mở (Dashed line with open arrow)",
+            "Đường mũi tên uốn cong tự trỏ lại chính lifeline",
+            "Đường nét đôi có gạch chéo đỏ",
+          ],
+          ans: 1,
+          exp: "Chuẩn UML quy định: Synchronous call dùng nét liền mũi tên đặc, Return message dùng nét đứt mũi tên mở.",
+        },
+        {
+          topic: "Sequence Diagram (Session 9-10)",
+          q: "Self-message (Thông điệp tự gọi) trên một Lifeline đại diện cho hành động nào của hệ thống?",
+          options: [
+            "Controller gửi dữ liệu sang giao diện người dùng",
+            "Đối tượng tự thực thi một phương thức nội bộ của chính nó (ví dụ: validate dữ liệu, tự tính tổng tiền)",
+            "Người dùng bấm nút trên màn hình ứng dụng",
+            "Cổng thanh toán phản hồi kết quả về máy chủ",
+          ],
+          ans: 1,
+          exp: "Self-message là mũi tên uốn cong xuất phát và quay về cùng một lifeline, thể hiện việc đối tượng tự thực thi hàm nội bộ.",
+        },
+        {
+          topic: "Sequence Diagram (Session 9-10)",
+          q: "Khung kết hợp 'loop' trong bài toán Đặt phòng / Đăng ký học phần được dùng đúng nhất ở bước nào?",
+          options: [
+            "Chuyển hướng người dùng sang trang đăng nhập",
+            "Duyệt qua từng đêm lưu trú hoặc từng môn học trong danh sách để kiểm tra/trừ số lượng tồn kho",
+            "Chờ Cổng thanh toán gửi phản hồi giao dịch",
+            "Đổi màu nút bấm trên màn hình điện thoại",
+          ],
+          ans: 1,
+          exp: "Khung 'loop' dùng để lặp qua danh sách tập hợp các phần tử (duyệt kiểm tra/trừ số phòng từng đêm hoặc kiểm tra sĩ số từng lớp học phần).",
+        },
+
+        // Session 13 - 14: UI/UX Wireframe
+        {
+          topic: "UI/UX Wireframe (Session 13-14)",
+          q: "Nguyên tắc 'Error Prevention' (Ngăn ngừa lỗi) được thể hiện chuẩn xác nhất qua hành động thiết kế nào?",
+          options: [
+            "Cho phép người dùng nhập ngày tùy ý bằng text tự do rồi báo lỗi popup nếu sai định dạng",
+            "Chủ động khóa (disable) các ngày ngoài phạm vi hợp lệ trên Date Picker và khóa chọn các phòng đã hết chỗ",
+            "Để hai nút Xóa và Xác nhận cùng màu đỏ cạnh nhau",
+            "Tự động xóa sạch dữ liệu đã điền trên form khi người dùng nhập sai một ô",
+          ],
+          ans: 1,
+          exp: "Error Prevention là chủ động chặn trước nguy cơ thao tác lỗi bằng cách disable/giới hạn thay vì để người dùng phạm lỗi rồi mới báo.",
+        },
+        {
+          topic: "UI/UX Wireframe (Session 13-14)",
+          q: "Việc màn hình hiển thị phòng 'Hết phòng' nhưng ô chọn vẫn có màu xanh và vẫn cho phép click chọn là vi phạm nguyên tắc UX nào?",
+          options: [
+            "Tính thẩm mỹ (Aesthetics)",
+            "Tính rõ ràng (Clarity) và Ngăn ngừa lỗi (Error Prevention)",
+            "Tính bảo mật thông tin (Confidentiality)",
+            "Khả năng mở rộng hệ thống (Scalability)",
+          ],
+          ans: 1,
+          exp: "Gây mâu thuẫn giữa thông tin hiển thị và trạng thái thao tác, khiến người dùng hoang mang và dễ thao tác sai.",
+        },
+        {
+          topic: "UI/UX Wireframe (Session 13-14)",
+          q: "Trong thiết kế giao diện, Call-To-Action (CTA) chính cần tuân thủ nguyên tắc Visual Hierarchy như thế nào?",
+          options: [
+            "Phải có kích thước và màu sắc hoàn toàn giống với các nút phụ để tạo sự đồng đều",
+            "Phải có độ tương phản cao, màu nổi bật và vị trí ưu tiên nhất để người dùng dễ nhận diện hành động mục tiêu",
+            "Nên ẩn vào thanh menu phụ để giao diện gọn gàng",
+            "Chỉ được dùng chữ thường không viền",
+          ],
+          ans: 1,
+          exp: "CTA chính phải nổi bật về kích thước và màu sắc (Primary button) để phân cấp rõ ràng với các nút phụ (Secondary button).",
+        },
+        {
+          topic: "UI/UX Wireframe (Session 13-14)",
+          q: "Nghiệp vụ cho phép đặt nhiều loại phòng kèm số lượng từng loại. Việc giao diện dùng 'Radio Button' là sai lầm vì:",
+          options: [
+            "Radio button tốn quá nhiều tài nguyên bộ nhớ điện thoại",
+            "Radio button theo chuẩn thiết kế chỉ cho phép người dùng chọn duy nhất 1 mục tại một thời điểm",
+            "Radio button bắt buộc phải kết nối với Cổng thanh toán",
+            "Không có lỗi gì, dùng Radio button là hoàn toàn hợp lệ",
+          ],
+          ans: 1,
+          exp: "Radio button mang ngữ nghĩa chọn 1 trong nhiều (Mutually Exclusive). Muốn chọn nhiều kèm số lượng phải dùng Card có bộ đếm hoặc Checkbox.",
+        },
+
+        // Session 15 - 16: ERD & CSDL
+        {
+          topic: "ERD & CSDL (Session 15-16)",
+          q: "Thuộc tính nào dưới đây là 'Thuộc tính dẫn xuất' (Derived Attribute) KHÔNG NÊN lưu trực tiếp trong bảng ở chuẩn 3NF?",
+          options: [
+            "Ngày nhận phòng (check_in_date)",
+            "Số đêm lưu trú (number_of_nights) vì tính được từ (check_out_date - check_in_date)",
+            "Email của khách hàng (email)",
+            "Mã định danh duy nhất (id)",
+          ],
+          ans: 1,
+          exp: "Số đêm là giá trị dẫn xuất tính từ ngày check-out trừ check-in. Lưu cứng sẽ vi phạm chuẩn hóa và dễ gây bất đồng bộ.",
+        },
+        {
+          topic: "ERD & CSDL (Session 15-16)",
+          q: "Theo quy tắc: 'Một đơn đặt có thể gồm nhiều loại phòng; đơn giá mỗi phòng được chốt tại thời điểm đặt'. Đơn giá chốt này cần được lưu ở đâu?",
+          options: [
+            "Bảng RoomType (Loại phòng)",
+            "Bảng trung gian BookingDetail (Chi tiết đặt phòng)",
+            "Bảng Guest (Khách hàng)",
+            "Không cần lưu vì luôn lấy theo giá hiện hành",
+          ],
+          ans: 1,
+          exp: "Phải lưu `paid_room_price` vào bảng trung gian nối N-N giữa Booking và RoomType để bảo toàn giá trị lịch sử lúc giao dịch.",
+        },
+        {
+          topic: "ERD & CSDL (Session 15-16)",
+          q: "Bảng quản lý tồn kho phòng trống theo từng đêm (`RoomInventory`) có khóa chính (Primary Key) chuẩn nhất là gì?",
+          options: [
+            "Chỉ cần trường số phòng còn trống (rooms_left)",
+            "Khóa chính phức hợp (Composite PK) gồm: (room_type_id, date)",
+            "Mã của người đặt phòng (guest_id)",
+            "Chỉ cần ngày lưu trú (date)",
+          ],
+          ans: 1,
+          exp: "Mỗi loại phòng trong một ngày cụ thể có một số lượng phòng trống duy nhất, do đó cặp (room_type_id, date) tạo thành khóa chính phức hợp.",
+        },
+        {
+          topic: "ERD & CSDL (Session 15-16)",
+          q: "Mối quan hệ Nhiều - Nhiều (N-N) trong mô hình thực thể ERD được giải quyết trong CSDL vật lý bằng cách nào?",
+          options: [
+            "Tạo một trường danh sách mảng (Array) chứa nhiều ID trong một ô dữ liệu",
+            "Tách thành 2 mối quan hệ 1-N thông qua một Bảng trung gian (Associative / Junction Table)",
+            "Gộp cả hai thực thể thành một bảng duy nhất",
+            "Xóa bỏ một trong hai thực thể",
+          ],
+          ans: 1,
+          exp: "Chuẩn hóa quan hệ N-N luôn được thực hiện bằng cách tạo bảng trung gian mang khóa ngoại trỏ về 2 bảng cha.",
+        },
+
+        // Session 17 - 18: SRS & Kiến trúc
+        {
+          topic: "SRS & Kiến trúc (Session 17-18)",
+          q: "Tài liệu đặc tả yêu cầu phần mềm (SRS - Software Requirements Specification) dùng làm căn cứ chính cho:",
+          options: [
+            "Hợp đồng pháp lý và nghiệm thu chức năng giữa khách hàng với đội ngũ phát triển",
+            "Hướng dẫn người dùng cuối cách cài đặt ứng dụng từ App Store",
+            "Đo lường thời gian sạc pin của máy chủ",
+            "Báo cáo tài chính doanh nghiệp cuối năm",
+          ],
+          ans: 0,
+          exp: "SRS là văn bản kỹ thuật chuẩn hóa chốt phạm vi, tính năng và ràng buộc chất lượng để phát triển, kiểm thử và nghiệm thu dự án.",
+        },
+        {
+          topic: "SRS & Kiến trúc (Session 17-18)",
+          q: "Trong kiến trúc phân tầng chuẩn (Layered Architecture: Controller - Service - Repository), Controller có nhiệm vụ gì?",
+          options: [
+            "Trực tiếp kết nối SQL cơ sở dữ liệu để truy vấn bảng",
+            "Tiếp nhận request từ client/giao diện, điều phối gọi tầng nghiệp vụ (Service) và trả kết quả về cho client",
+            "Lưu trữ dữ liệu vĩnh viễn trên đĩa cứng",
+            "Thiết kế bố cục CSS cho màn hình điện thoại",
+          ],
+          ans: 1,
+          exp: "Controller đóng vai trò điều hướng/điều phối (Dispatcher), không chứa logic nghiệp vụ nặng hay truy vấn DB trực tiếp.",
+        },
+        {
+          topic: "Tổng quan & Khảo sát (Session 1-4)",
+          q: "Mô hình phát triển phần mềm Agile/Scrum ưu tiên điều nào sau đây nhất?",
+          options: [
+            "Tài liệu toàn diện hơn là phần mềm chạy tốt",
+            "Tương tác cá nhân và phản hồi thay đổi hơn là tuân thủ quy trình cứng nhắc",
+            "Thực hiện tuần tự từng bước từ phân tích đến khi bàn giao không được quay lại",
+            "Cấm tuyệt đối khách hàng thay đổi yêu cầu trong quá trình làm",
+          ],
+          ans: 1,
+          exp: "Agile Manifesto đề cao sự thích ứng với thay đổi và chuyển giao các phiên bản phần mềm chạy được sau mỗi Sprint.",
+        },
+      ];
+      const EXTRA_QUESTIONS = [
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về As-is process?",
+    "options": [
+      "Thiết kế database cuối cùng",
+      "Quy trình đang được thực hiện trong thực tế hiện tại",
+      "Quy trình mục tiêu sau cải tiến",
+      "Giao diện prototype"
+    ],
+    "ans": 1,
+    "exp": "As-is mô tả trạng thái/quy trình hiện tại."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến As-is process, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Thiết kế database cuối cùng",
+      "Giao diện prototype",
+      "Quy trình mục tiêu sau cải tiến",
+      "Quy trình đang được thực hiện trong thực tế hiện tại"
+    ],
+    "ans": 3,
+    "exp": "As-is mô tả trạng thái/quy trình hiện tại."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về As-is process, đáp án nào nên được chọn?",
+    "options": [
+      "Giao diện prototype",
+      "Thiết kế database cuối cùng",
+      "Quy trình đang được thực hiện trong thực tế hiện tại",
+      "Quy trình mục tiêu sau cải tiến"
+    ],
+    "ans": 2,
+    "exp": "As-is mô tả trạng thái/quy trình hiện tại."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của As-is process trong bài toán hệ thống là gì?",
+    "options": [
+      "Quy trình đang được thực hiện trong thực tế hiện tại",
+      "Quy trình mục tiêu sau cải tiến",
+      "Thiết kế database cuối cùng",
+      "Giao diện prototype"
+    ],
+    "ans": 0,
+    "exp": "As-is mô tả trạng thái/quy trình hiện tại."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về To-be process?",
+    "options": [
+      "Quy trình hoặc trạng thái mong muốn sau khi cải tiến",
+      "Danh sách khóa ngoại",
+      "Quy trình cũ trước khi khảo sát",
+      "Mã nguồn production"
+    ],
+    "ans": 0,
+    "exp": "To-be mô tả trạng thái mục tiêu."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến To-be process, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Mã nguồn production",
+      "Quy trình cũ trước khi khảo sát",
+      "Quy trình hoặc trạng thái mong muốn sau khi cải tiến",
+      "Danh sách khóa ngoại"
+    ],
+    "ans": 2,
+    "exp": "To-be mô tả trạng thái mục tiêu."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về To-be process, đáp án nào nên được chọn?",
+    "options": [
+      "Quy trình hoặc trạng thái mong muốn sau khi cải tiến",
+      "Danh sách khóa ngoại",
+      "Mã nguồn production",
+      "Quy trình cũ trước khi khảo sát"
+    ],
+    "ans": 0,
+    "exp": "To-be mô tả trạng thái mục tiêu."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của To-be process trong bài toán hệ thống là gì?",
+    "options": [
+      "Quy trình cũ trước khi khảo sát",
+      "Quy trình hoặc trạng thái mong muốn sau khi cải tiến",
+      "Danh sách khóa ngoại",
+      "Mã nguồn production"
+    ],
+    "ans": 1,
+    "exp": "To-be mô tả trạng thái mục tiêu."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Stakeholder?",
+    "options": [
+      "Chỉ lập trình viên backend",
+      "Người hoặc tổ chức có lợi ích, quyền quyết định hoặc bị ảnh hưởng bởi hệ thống",
+      "Chỉ người thiết kế logo",
+      "Chỉ máy chủ database"
+    ],
+    "ans": 1,
+    "exp": "Stakeholder không chỉ là người dùng trực tiếp; đó có thể là chủ hệ thống, quản lý, bộ phận nghiệp vụ..."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến Stakeholder, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Người hoặc tổ chức có lợi ích, quyền quyết định hoặc bị ảnh hưởng bởi hệ thống",
+      "Chỉ máy chủ database",
+      "Chỉ lập trình viên backend",
+      "Chỉ người thiết kế logo"
+    ],
+    "ans": 0,
+    "exp": "Stakeholder không chỉ là người dùng trực tiếp; đó có thể là chủ hệ thống, quản lý, bộ phận nghiệp vụ..."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về Stakeholder, đáp án nào nên được chọn?",
+    "options": [
+      "Người hoặc tổ chức có lợi ích, quyền quyết định hoặc bị ảnh hưởng bởi hệ thống",
+      "Chỉ người thiết kế logo",
+      "Chỉ lập trình viên backend",
+      "Chỉ máy chủ database"
+    ],
+    "ans": 0,
+    "exp": "Stakeholder không chỉ là người dùng trực tiếp; đó có thể là chủ hệ thống, quản lý, bộ phận nghiệp vụ..."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của Stakeholder trong bài toán hệ thống là gì?",
+    "options": [
+      "Chỉ lập trình viên backend",
+      "Chỉ người thiết kế logo",
+      "Chỉ máy chủ database",
+      "Người hoặc tổ chức có lợi ích, quyền quyết định hoặc bị ảnh hưởng bởi hệ thống"
+    ],
+    "ans": 3,
+    "exp": "Stakeholder không chỉ là người dùng trực tiếp; đó có thể là chủ hệ thống, quản lý, bộ phận nghiệp vụ..."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Acceptance Criteria?",
+    "options": [
+      "Tên của database",
+      "Điều kiện cụ thể để xác nhận một yêu cầu/chức năng đạt yêu cầu",
+      "Danh sách thư viện frontend",
+      "Danh sách màu sắc của giao diện"
+    ],
+    "ans": 1,
+    "exp": "Acceptance Criteria giúp kiểm tra kết quả có đạt yêu cầu hay không."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến Acceptance Criteria, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Điều kiện cụ thể để xác nhận một yêu cầu/chức năng đạt yêu cầu",
+      "Danh sách thư viện frontend",
+      "Tên của database",
+      "Danh sách màu sắc của giao diện"
+    ],
+    "ans": 0,
+    "exp": "Acceptance Criteria giúp kiểm tra kết quả có đạt yêu cầu hay không."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về Acceptance Criteria, đáp án nào nên được chọn?",
+    "options": [
+      "Tên của database",
+      "Danh sách màu sắc của giao diện",
+      "Danh sách thư viện frontend",
+      "Điều kiện cụ thể để xác nhận một yêu cầu/chức năng đạt yêu cầu"
+    ],
+    "ans": 3,
+    "exp": "Acceptance Criteria giúp kiểm tra kết quả có đạt yêu cầu hay không."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của Acceptance Criteria trong bài toán hệ thống là gì?",
+    "options": [
+      "Danh sách thư viện frontend",
+      "Danh sách màu sắc của giao diện",
+      "Điều kiện cụ thể để xác nhận một yêu cầu/chức năng đạt yêu cầu",
+      "Tên của database"
+    ],
+    "ans": 2,
+    "exp": "Acceptance Criteria giúp kiểm tra kết quả có đạt yêu cầu hay không."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Scope Creep?",
+    "options": [
+      "Database tự động tăng dung lượng",
+      "Phạm vi dự án liên tục tăng ngoài phạm vi đã kiểm soát",
+      "Người dùng đổi mật khẩu",
+      "Server bị mất kết nối"
+    ],
+    "ans": 1,
+    "exp": "Scope creep là việc thêm yêu cầu/phạm vi không được kiểm soát."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến Scope Creep, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Người dùng đổi mật khẩu",
+      "Phạm vi dự án liên tục tăng ngoài phạm vi đã kiểm soát",
+      "Database tự động tăng dung lượng",
+      "Server bị mất kết nối"
+    ],
+    "ans": 1,
+    "exp": "Scope creep là việc thêm yêu cầu/phạm vi không được kiểm soát."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về Scope Creep, đáp án nào nên được chọn?",
+    "options": [
+      "Phạm vi dự án liên tục tăng ngoài phạm vi đã kiểm soát",
+      "Người dùng đổi mật khẩu",
+      "Database tự động tăng dung lượng",
+      "Server bị mất kết nối"
+    ],
+    "ans": 0,
+    "exp": "Scope creep là việc thêm yêu cầu/phạm vi không được kiểm soát."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của Scope Creep trong bài toán hệ thống là gì?",
+    "options": [
+      "Server bị mất kết nối",
+      "Phạm vi dự án liên tục tăng ngoài phạm vi đã kiểm soát",
+      "Người dùng đổi mật khẩu",
+      "Database tự động tăng dung lượng"
+    ],
+    "ans": 1,
+    "exp": "Scope creep là việc thêm yêu cầu/phạm vi không được kiểm soát."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về MoSCoW?",
+    "options": [
+      "Một kỹ thuật nén ảnh",
+      "Phương pháp ưu tiên yêu cầu thành Must, Should, Could, Won’t",
+      "Một loại biểu đồ UML",
+      "Phương pháp chuẩn hóa database"
+    ],
+    "ans": 1,
+    "exp": "MoSCoW dùng để ưu tiên requirement."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến MoSCoW, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Phương pháp chuẩn hóa database",
+      "Một kỹ thuật nén ảnh",
+      "Phương pháp ưu tiên yêu cầu thành Must, Should, Could, Won’t",
+      "Một loại biểu đồ UML"
+    ],
+    "ans": 2,
+    "exp": "MoSCoW dùng để ưu tiên requirement."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về MoSCoW, đáp án nào nên được chọn?",
+    "options": [
+      "Phương pháp ưu tiên yêu cầu thành Must, Should, Could, Won’t",
+      "Một loại biểu đồ UML",
+      "Một kỹ thuật nén ảnh",
+      "Phương pháp chuẩn hóa database"
+    ],
+    "ans": 0,
+    "exp": "MoSCoW dùng để ưu tiên requirement."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của MoSCoW trong bài toán hệ thống là gì?",
+    "options": [
+      "Một kỹ thuật nén ảnh",
+      "Phương pháp chuẩn hóa database",
+      "Một loại biểu đồ UML",
+      "Phương pháp ưu tiên yêu cầu thành Must, Should, Could, Won’t"
+    ],
+    "ans": 3,
+    "exp": "MoSCoW dùng để ưu tiên requirement."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Traceability?",
+    "options": [
+      "Khả năng truy vết một yêu cầu tới thiết kế, code hoặc test liên quan",
+      "Khả năng sao lưu ảnh",
+      "Khả năng đổi màu UI",
+      "Khả năng tăng tốc CPU"
+    ],
+    "ans": 0,
+    "exp": "Traceability giúp kiểm soát yêu cầu xuyên suốt vòng đời."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến Traceability, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Khả năng truy vết một yêu cầu tới thiết kế, code hoặc test liên quan",
+      "Khả năng đổi màu UI",
+      "Khả năng tăng tốc CPU",
+      "Khả năng sao lưu ảnh"
+    ],
+    "ans": 0,
+    "exp": "Traceability giúp kiểm soát yêu cầu xuyên suốt vòng đời."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về Traceability, đáp án nào nên được chọn?",
+    "options": [
+      "Khả năng sao lưu ảnh",
+      "Khả năng tăng tốc CPU",
+      "Khả năng đổi màu UI",
+      "Khả năng truy vết một yêu cầu tới thiết kế, code hoặc test liên quan"
+    ],
+    "ans": 3,
+    "exp": "Traceability giúp kiểm soát yêu cầu xuyên suốt vòng đời."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của Traceability trong bài toán hệ thống là gì?",
+    "options": [
+      "Khả năng tăng tốc CPU",
+      "Khả năng đổi màu UI",
+      "Khả năng truy vết một yêu cầu tới thiết kế, code hoặc test liên quan",
+      "Khả năng sao lưu ảnh"
+    ],
+    "ans": 2,
+    "exp": "Traceability giúp kiểm soát yêu cầu xuyên suốt vòng đời."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Requirement conflict?",
+    "options": [
+      "Hai nút có cùng kích thước",
+      "Hai bảng có cùng số dòng",
+      "Tình huống hai hoặc nhiều yêu cầu mâu thuẫn hoặc khó thỏa mãn đồng thời",
+      "Hai người dùng đăng nhập cùng lúc"
+    ],
+    "ans": 2,
+    "exp": "Conflict cần được làm rõ với stakeholder có thẩm quyền."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Khi gặp tình huống liên quan đến Requirement conflict, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Hai nút có cùng kích thước",
+      "Tình huống hai hoặc nhiều yêu cầu mâu thuẫn hoặc khó thỏa mãn đồng thời",
+      "Hai bảng có cùng số dòng",
+      "Hai người dùng đăng nhập cùng lúc"
+    ],
+    "ans": 1,
+    "exp": "Conflict cần được làm rõ với stakeholder có thẩm quyền."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Nếu đề thi hỏi về Requirement conflict, đáp án nào nên được chọn?",
+    "options": [
+      "Hai người dùng đăng nhập cùng lúc",
+      "Hai bảng có cùng số dòng",
+      "Hai nút có cùng kích thước",
+      "Tình huống hai hoặc nhiều yêu cầu mâu thuẫn hoặc khó thỏa mãn đồng thời"
+    ],
+    "ans": 3,
+    "exp": "Conflict cần được làm rõ với stakeholder có thẩm quyền."
+  },
+  {
+    "topic": "Tổng quan & Khảo sát (Session 1-4)",
+    "q": "Ý nghĩa đúng của Requirement conflict trong bài toán hệ thống là gì?",
+    "options": [
+      "Hai bảng có cùng số dòng",
+      "Tình huống hai hoặc nhiều yêu cầu mâu thuẫn hoặc khó thỏa mãn đồng thời",
+      "Hai người dùng đăng nhập cùng lúc",
+      "Hai nút có cùng kích thước"
+    ],
+    "ans": 1,
+    "exp": "Conflict cần được làm rõ với stakeholder có thẩm quyền."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Primary Actor?",
+    "options": [
+      "Database hỗ trợ truy vấn",
+      "Actor khởi tạo Use Case để đạt một mục tiêu",
+      "Một class kế thừa",
+      "Một nút trên giao diện"
+    ],
+    "ans": 1,
+    "exp": "Primary Actor là bên khởi tạo tương tác để đạt mục tiêu."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Primary Actor, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một class kế thừa",
+      "Một nút trên giao diện",
+      "Actor khởi tạo Use Case để đạt một mục tiêu",
+      "Database hỗ trợ truy vấn"
+    ],
+    "ans": 2,
+    "exp": "Primary Actor là bên khởi tạo tương tác để đạt mục tiêu."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Primary Actor, đáp án nào nên được chọn?",
+    "options": [
+      "Một nút trên giao diện",
+      "Database hỗ trợ truy vấn",
+      "Một class kế thừa",
+      "Actor khởi tạo Use Case để đạt một mục tiêu"
+    ],
+    "ans": 3,
+    "exp": "Primary Actor là bên khởi tạo tương tác để đạt mục tiêu."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Primary Actor trong bài toán hệ thống là gì?",
+    "options": [
+      "Một class kế thừa",
+      "Một nút trên giao diện",
+      "Actor khởi tạo Use Case để đạt một mục tiêu",
+      "Database hỗ trợ truy vấn"
+    ],
+    "ans": 2,
+    "exp": "Primary Actor là bên khởi tạo tương tác để đạt mục tiêu."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Precondition?",
+    "options": [
+      "Kết quả sau khi Use Case kết thúc",
+      "Tên của actor",
+      "Điều kiện phải đúng trước khi Use Case bắt đầu",
+      "Mã nguồn của controller"
+    ],
+    "ans": 2,
+    "exp": "Precondition mô tả trạng thái đầu vào cần có."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Precondition, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Kết quả sau khi Use Case kết thúc",
+      "Mã nguồn của controller",
+      "Điều kiện phải đúng trước khi Use Case bắt đầu",
+      "Tên của actor"
+    ],
+    "ans": 2,
+    "exp": "Precondition mô tả trạng thái đầu vào cần có."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Precondition, đáp án nào nên được chọn?",
+    "options": [
+      "Mã nguồn của controller",
+      "Kết quả sau khi Use Case kết thúc",
+      "Tên của actor",
+      "Điều kiện phải đúng trước khi Use Case bắt đầu"
+    ],
+    "ans": 3,
+    "exp": "Precondition mô tả trạng thái đầu vào cần có."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Precondition trong bài toán hệ thống là gì?",
+    "options": [
+      "Mã nguồn của controller",
+      "Kết quả sau khi Use Case kết thúc",
+      "Tên của actor",
+      "Điều kiện phải đúng trước khi Use Case bắt đầu"
+    ],
+    "ans": 3,
+    "exp": "Precondition mô tả trạng thái đầu vào cần có."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Postcondition?",
+    "options": [
+      "Trạng thái hoặc kết quả mong đợi sau khi Use Case kết thúc",
+      "Điều kiện bắt buộc trước khi đăng nhập",
+      "Màu của nút",
+      "Tên bảng dữ liệu"
+    ],
+    "ans": 0,
+    "exp": "Postcondition mô tả trạng thái sau xử lý."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Postcondition, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Màu của nút",
+      "Điều kiện bắt buộc trước khi đăng nhập",
+      "Tên bảng dữ liệu",
+      "Trạng thái hoặc kết quả mong đợi sau khi Use Case kết thúc"
+    ],
+    "ans": 3,
+    "exp": "Postcondition mô tả trạng thái sau xử lý."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Postcondition, đáp án nào nên được chọn?",
+    "options": [
+      "Điều kiện bắt buộc trước khi đăng nhập",
+      "Màu của nút",
+      "Trạng thái hoặc kết quả mong đợi sau khi Use Case kết thúc",
+      "Tên bảng dữ liệu"
+    ],
+    "ans": 2,
+    "exp": "Postcondition mô tả trạng thái sau xử lý."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Postcondition trong bài toán hệ thống là gì?",
+    "options": [
+      "Trạng thái hoặc kết quả mong đợi sau khi Use Case kết thúc",
+      "Tên bảng dữ liệu",
+      "Điều kiện bắt buộc trước khi đăng nhập",
+      "Màu của nút"
+    ],
+    "ans": 0,
+    "exp": "Postcondition mô tả trạng thái sau xử lý."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Happy Path?",
+    "options": [
+      "Luồng tạo database",
+      "Luồng chính trong đó Use Case diễn ra thành công theo kịch bản chuẩn",
+      "Luồng lỗi SQL",
+      "Luồng thiết kế CSS"
+    ],
+    "ans": 1,
+    "exp": "Happy path là kịch bản thành công bình thường."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Happy Path, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Luồng lỗi SQL",
+      "Luồng tạo database",
+      "Luồng chính trong đó Use Case diễn ra thành công theo kịch bản chuẩn",
+      "Luồng thiết kế CSS"
+    ],
+    "ans": 2,
+    "exp": "Happy path là kịch bản thành công bình thường."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Happy Path, đáp án nào nên được chọn?",
+    "options": [
+      "Luồng chính trong đó Use Case diễn ra thành công theo kịch bản chuẩn",
+      "Luồng lỗi SQL",
+      "Luồng tạo database",
+      "Luồng thiết kế CSS"
+    ],
+    "ans": 0,
+    "exp": "Happy path là kịch bản thành công bình thường."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Happy Path trong bài toán hệ thống là gì?",
+    "options": [
+      "Luồng tạo database",
+      "Luồng chính trong đó Use Case diễn ra thành công theo kịch bản chuẩn",
+      "Luồng lỗi SQL",
+      "Luồng thiết kế CSS"
+    ],
+    "ans": 1,
+    "exp": "Happy path là kịch bản thành công bình thường."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Alternate Flow?",
+    "options": [
+      "Luồng luôn luôn bắt buộc",
+      "Tên của database",
+      "Luồng thay thế xảy ra khi có điều kiện khác với luồng chính",
+      "Một quan hệ kế thừa"
+    ],
+    "ans": 2,
+    "exp": "Alternate flow mô tả các tình huống hợp lệ khác với happy path."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Alternate Flow, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Luồng luôn luôn bắt buộc",
+      "Luồng thay thế xảy ra khi có điều kiện khác với luồng chính",
+      "Một quan hệ kế thừa",
+      "Tên của database"
+    ],
+    "ans": 1,
+    "exp": "Alternate flow mô tả các tình huống hợp lệ khác với happy path."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Alternate Flow, đáp án nào nên được chọn?",
+    "options": [
+      "Luồng luôn luôn bắt buộc",
+      "Một quan hệ kế thừa",
+      "Tên của database",
+      "Luồng thay thế xảy ra khi có điều kiện khác với luồng chính"
+    ],
+    "ans": 3,
+    "exp": "Alternate flow mô tả các tình huống hợp lệ khác với happy path."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Alternate Flow trong bài toán hệ thống là gì?",
+    "options": [
+      "Luồng thay thế xảy ra khi có điều kiện khác với luồng chính",
+      "Luồng luôn luôn bắt buộc",
+      "Một quan hệ kế thừa",
+      "Tên của database"
+    ],
+    "ans": 0,
+    "exp": "Alternate flow mô tả các tình huống hợp lệ khác với happy path."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Fork trong Activity Diagram?",
+    "options": [
+      "Kết thúc toàn bộ activity",
+      "Chia một luồng thành nhiều luồng có thể chạy song song",
+      "Tạo khóa chính",
+      "Chọn một trong nhiều nhánh"
+    ],
+    "ans": 1,
+    "exp": "Fork biểu diễn việc tách luồng song song."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Khi gặp tình huống liên quan đến Fork trong Activity Diagram, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Tạo khóa chính",
+      "Chọn một trong nhiều nhánh",
+      "Kết thúc toàn bộ activity",
+      "Chia một luồng thành nhiều luồng có thể chạy song song"
+    ],
+    "ans": 3,
+    "exp": "Fork biểu diễn việc tách luồng song song."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Nếu đề thi hỏi về Fork trong Activity Diagram, đáp án nào nên được chọn?",
+    "options": [
+      "Kết thúc toàn bộ activity",
+      "Chọn một trong nhiều nhánh",
+      "Tạo khóa chính",
+      "Chia một luồng thành nhiều luồng có thể chạy song song"
+    ],
+    "ans": 3,
+    "exp": "Fork biểu diễn việc tách luồng song song."
+  },
+  {
+    "topic": "Use Case & Activity (Session 5-6)",
+    "q": "Ý nghĩa đúng của Fork trong Activity Diagram trong bài toán hệ thống là gì?",
+    "options": [
+      "Kết thúc toàn bộ activity",
+      "Chia một luồng thành nhiều luồng có thể chạy song song",
+      "Tạo khóa chính",
+      "Chọn một trong nhiều nhánh"
+    ],
+    "ans": 1,
+    "exp": "Fork biểu diễn việc tách luồng song song."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Generalization?",
+    "options": [
+      "Quan hệ lưu trữ file",
+      "Quan hệ bảng trung gian",
+      "Quan hệ kế thừa giữa lớp tổng quát và lớp chuyên biệt",
+      "Quan hệ giao tiếp UI"
+    ],
+    "ans": 2,
+    "exp": "Generalization tương ứng ý tưởng is-a/inheritance."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Generalization, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Quan hệ bảng trung gian",
+      "Quan hệ giao tiếp UI",
+      "Quan hệ lưu trữ file",
+      "Quan hệ kế thừa giữa lớp tổng quát và lớp chuyên biệt"
+    ],
+    "ans": 3,
+    "exp": "Generalization tương ứng ý tưởng is-a/inheritance."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Generalization, đáp án nào nên được chọn?",
+    "options": [
+      "Quan hệ lưu trữ file",
+      "Quan hệ kế thừa giữa lớp tổng quát và lớp chuyên biệt",
+      "Quan hệ bảng trung gian",
+      "Quan hệ giao tiếp UI"
+    ],
+    "ans": 1,
+    "exp": "Generalization tương ứng ý tưởng is-a/inheritance."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Generalization trong bài toán hệ thống là gì?",
+    "options": [
+      "Quan hệ bảng trung gian",
+      "Quan hệ lưu trữ file",
+      "Quan hệ kế thừa giữa lớp tổng quát và lớp chuyên biệt",
+      "Quan hệ giao tiếp UI"
+    ],
+    "ans": 2,
+    "exp": "Generalization tương ứng ý tưởng is-a/inheritance."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Multiplicity 0..1?",
+    "options": [
+      "Có đúng một hoặc nhiều",
+      "Có không giới hạn nhưng phải ít nhất hai",
+      "Bắt buộc ít nhất một đối tượng",
+      "Một đối tượng có thể không có hoặc có tối đa một đối tượng liên quan"
+    ],
+    "ans": 3,
+    "exp": "0..1 là optional, tối đa một."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Multiplicity 0..1, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Có đúng một hoặc nhiều",
+      "Bắt buộc ít nhất một đối tượng",
+      "Một đối tượng có thể không có hoặc có tối đa một đối tượng liên quan",
+      "Có không giới hạn nhưng phải ít nhất hai"
+    ],
+    "ans": 2,
+    "exp": "0..1 là optional, tối đa một."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Multiplicity 0..1, đáp án nào nên được chọn?",
+    "options": [
+      "Có đúng một hoặc nhiều",
+      "Bắt buộc ít nhất một đối tượng",
+      "Một đối tượng có thể không có hoặc có tối đa một đối tượng liên quan",
+      "Có không giới hạn nhưng phải ít nhất hai"
+    ],
+    "ans": 2,
+    "exp": "0..1 là optional, tối đa một."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Multiplicity 0..1 trong bài toán hệ thống là gì?",
+    "options": [
+      "Bắt buộc ít nhất một đối tượng",
+      "Có không giới hạn nhưng phải ít nhất hai",
+      "Một đối tượng có thể không có hoặc có tối đa một đối tượng liên quan",
+      "Có đúng một hoặc nhiều"
+    ],
+    "ans": 2,
+    "exp": "0..1 là optional, tối đa một."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Multiplicity 1..*?",
+    "options": [
+      "Tối đa một đối tượng",
+      "Ít nhất một và có thể có nhiều đối tượng liên quan",
+      "Có thể không có đối tượng nào",
+      "Đúng hai đối tượng"
+    ],
+    "ans": 1,
+    "exp": "1..* nghĩa là minimum 1, maximum many."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Multiplicity 1..*, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Có thể không có đối tượng nào",
+      "Tối đa một đối tượng",
+      "Đúng hai đối tượng",
+      "Ít nhất một và có thể có nhiều đối tượng liên quan"
+    ],
+    "ans": 3,
+    "exp": "1..* nghĩa là minimum 1, maximum many."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Multiplicity 1..*, đáp án nào nên được chọn?",
+    "options": [
+      "Ít nhất một và có thể có nhiều đối tượng liên quan",
+      "Đúng hai đối tượng",
+      "Tối đa một đối tượng",
+      "Có thể không có đối tượng nào"
+    ],
+    "ans": 0,
+    "exp": "1..* nghĩa là minimum 1, maximum many."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Multiplicity 1..* trong bài toán hệ thống là gì?",
+    "options": [
+      "Có thể không có đối tượng nào",
+      "Ít nhất một và có thể có nhiều đối tượng liên quan",
+      "Đúng hai đối tượng",
+      "Tối đa một đối tượng"
+    ],
+    "ans": 1,
+    "exp": "1..* nghĩa là minimum 1, maximum many."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Association?",
+    "options": [
+      "Quan hệ kế thừa bắt buộc",
+      "Quan hệ liên kết giữa các lớp",
+      "Một phương thức private",
+      "Quan hệ giữa hai database server"
+    ],
+    "ans": 1,
+    "exp": "Association biểu diễn liên kết giữa các lớp."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Association, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Quan hệ kế thừa bắt buộc",
+      "Quan hệ liên kết giữa các lớp",
+      "Quan hệ giữa hai database server",
+      "Một phương thức private"
+    ],
+    "ans": 1,
+    "exp": "Association biểu diễn liên kết giữa các lớp."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Association, đáp án nào nên được chọn?",
+    "options": [
+      "Quan hệ liên kết giữa các lớp",
+      "Một phương thức private",
+      "Quan hệ kế thừa bắt buộc",
+      "Quan hệ giữa hai database server"
+    ],
+    "ans": 0,
+    "exp": "Association biểu diễn liên kết giữa các lớp."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Association trong bài toán hệ thống là gì?",
+    "options": [
+      "Quan hệ giữa hai database server",
+      "Một phương thức private",
+      "Quan hệ kế thừa bắt buộc",
+      "Quan hệ liên kết giữa các lớp"
+    ],
+    "ans": 3,
+    "exp": "Association biểu diễn liên kết giữa các lớp."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Composition?",
+    "options": [
+      "Quan hệ kế thừa",
+      "Quan hệ whole-part trong đó phần con thường phụ thuộc vòng đời vào phần cha",
+      "Quan hệ actor với Use Case",
+      "Quan hệ N:N bắt buộc"
+    ],
+    "ans": 1,
+    "exp": "Composition dùng hình thoi đặc và thể hiện sở hữu mạnh."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Composition, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Quan hệ whole-part trong đó phần con thường phụ thuộc vòng đời vào phần cha",
+      "Quan hệ actor với Use Case",
+      "Quan hệ N:N bắt buộc",
+      "Quan hệ kế thừa"
+    ],
+    "ans": 0,
+    "exp": "Composition dùng hình thoi đặc và thể hiện sở hữu mạnh."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Composition, đáp án nào nên được chọn?",
+    "options": [
+      "Quan hệ kế thừa",
+      "Quan hệ whole-part trong đó phần con thường phụ thuộc vòng đời vào phần cha",
+      "Quan hệ actor với Use Case",
+      "Quan hệ N:N bắt buộc"
+    ],
+    "ans": 1,
+    "exp": "Composition dùng hình thoi đặc và thể hiện sở hữu mạnh."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Composition trong bài toán hệ thống là gì?",
+    "options": [
+      "Quan hệ kế thừa",
+      "Quan hệ actor với Use Case",
+      "Quan hệ N:N bắt buộc",
+      "Quan hệ whole-part trong đó phần con thường phụ thuộc vòng đời vào phần cha"
+    ],
+    "ans": 3,
+    "exp": "Composition dùng hình thoi đặc và thể hiện sở hữu mạnh."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Aggregation?",
+    "options": [
+      "Quan hệ chỉ dùng cho API",
+      "Quan hệ kế thừa",
+      "Quan hệ bắt buộc giữa PK và FK",
+      "Quan hệ whole-part yếu hơn, phần con có thể tồn tại độc lập với phần tổng thể"
+    ],
+    "ans": 3,
+    "exp": "Aggregation dùng hình thoi rỗng."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Khi gặp tình huống liên quan đến Aggregation, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Quan hệ bắt buộc giữa PK và FK",
+      "Quan hệ chỉ dùng cho API",
+      "Quan hệ whole-part yếu hơn, phần con có thể tồn tại độc lập với phần tổng thể",
+      "Quan hệ kế thừa"
+    ],
+    "ans": 2,
+    "exp": "Aggregation dùng hình thoi rỗng."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Nếu đề thi hỏi về Aggregation, đáp án nào nên được chọn?",
+    "options": [
+      "Quan hệ bắt buộc giữa PK và FK",
+      "Quan hệ chỉ dùng cho API",
+      "Quan hệ kế thừa",
+      "Quan hệ whole-part yếu hơn, phần con có thể tồn tại độc lập với phần tổng thể"
+    ],
+    "ans": 3,
+    "exp": "Aggregation dùng hình thoi rỗng."
+  },
+  {
+    "topic": "Class Diagram (Session 7-8)",
+    "q": "Ý nghĩa đúng của Aggregation trong bài toán hệ thống là gì?",
+    "options": [
+      "Quan hệ bắt buộc giữa PK và FK",
+      "Quan hệ kế thừa",
+      "Quan hệ whole-part yếu hơn, phần con có thể tồn tại độc lập với phần tổng thể",
+      "Quan hệ chỉ dùng cho API"
+    ],
+    "ans": 2,
+    "exp": "Aggregation dùng hình thoi rỗng."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Lifeline?",
+    "options": [
+      "Khóa chính của database",
+      "Participant/đối tượng tham gia vào một tương tác theo thời gian",
+      "Một guard condition",
+      "Một màn hình Figma"
+    ],
+    "ans": 1,
+    "exp": "Lifeline cho biết participant tham gia interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Khi gặp tình huống liên quan đến Lifeline, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Participant/đối tượng tham gia vào một tương tác theo thời gian",
+      "Khóa chính của database",
+      "Một màn hình Figma",
+      "Một guard condition"
+    ],
+    "ans": 0,
+    "exp": "Lifeline cho biết participant tham gia interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Nếu đề thi hỏi về Lifeline, đáp án nào nên được chọn?",
+    "options": [
+      "Một guard condition",
+      "Khóa chính của database",
+      "Participant/đối tượng tham gia vào một tương tác theo thời gian",
+      "Một màn hình Figma"
+    ],
+    "ans": 2,
+    "exp": "Lifeline cho biết participant tham gia interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Ý nghĩa đúng của Lifeline trong bài toán hệ thống là gì?",
+    "options": [
+      "Participant/đối tượng tham gia vào một tương tác theo thời gian",
+      "Một màn hình Figma",
+      "Một guard condition",
+      "Khóa chính của database"
+    ],
+    "ans": 0,
+    "exp": "Lifeline cho biết participant tham gia interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Activation bar?",
+    "options": [
+      "Một điều kiện rẽ nhánh",
+      "Khoảng thời gian một participant đang thực thi xử lý",
+      "Một actor phụ",
+      "Một khóa ngoại"
+    ],
+    "ans": 1,
+    "exp": "Activation thể hiện thời gian thực thi trên lifeline."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Khi gặp tình huống liên quan đến Activation bar, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Khoảng thời gian một participant đang thực thi xử lý",
+      "Một actor phụ",
+      "Một khóa ngoại",
+      "Một điều kiện rẽ nhánh"
+    ],
+    "ans": 0,
+    "exp": "Activation thể hiện thời gian thực thi trên lifeline."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Nếu đề thi hỏi về Activation bar, đáp án nào nên được chọn?",
+    "options": [
+      "Một điều kiện rẽ nhánh",
+      "Một actor phụ",
+      "Khoảng thời gian một participant đang thực thi xử lý",
+      "Một khóa ngoại"
+    ],
+    "ans": 2,
+    "exp": "Activation thể hiện thời gian thực thi trên lifeline."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Ý nghĩa đúng của Activation bar trong bài toán hệ thống là gì?",
+    "options": [
+      "Một điều kiện rẽ nhánh",
+      "Một actor phụ",
+      "Một khóa ngoại",
+      "Khoảng thời gian một participant đang thực thi xử lý"
+    ],
+    "ans": 3,
+    "exp": "Activation thể hiện thời gian thực thi trên lifeline."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về opt fragment?",
+    "options": [
+      "Đoạn bắt buộc chạy nhiều lần",
+      "Đoạn biểu diễn class inheritance",
+      "Đoạn tương tác tùy chọn, chỉ chạy khi guard đúng",
+      "Đoạn chứa nhiều nhánh song song"
+    ],
+    "ans": 2,
+    "exp": "opt phù hợp với if đơn/tùy chọn."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Khi gặp tình huống liên quan đến opt fragment, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Đoạn chứa nhiều nhánh song song",
+      "Đoạn bắt buộc chạy nhiều lần",
+      "Đoạn biểu diễn class inheritance",
+      "Đoạn tương tác tùy chọn, chỉ chạy khi guard đúng"
+    ],
+    "ans": 3,
+    "exp": "opt phù hợp với if đơn/tùy chọn."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Nếu đề thi hỏi về opt fragment, đáp án nào nên được chọn?",
+    "options": [
+      "Đoạn tương tác tùy chọn, chỉ chạy khi guard đúng",
+      "Đoạn chứa nhiều nhánh song song",
+      "Đoạn bắt buộc chạy nhiều lần",
+      "Đoạn biểu diễn class inheritance"
+    ],
+    "ans": 0,
+    "exp": "opt phù hợp với if đơn/tùy chọn."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Ý nghĩa đúng của opt fragment trong bài toán hệ thống là gì?",
+    "options": [
+      "Đoạn tương tác tùy chọn, chỉ chạy khi guard đúng",
+      "Đoạn biểu diễn class inheritance",
+      "Đoạn bắt buộc chạy nhiều lần",
+      "Đoạn chứa nhiều nhánh song song"
+    ],
+    "ans": 0,
+    "exp": "opt phù hợp với if đơn/tùy chọn."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về par fragment?",
+    "options": [
+      "Các nhánh loại trừ nhau",
+      "Một vòng lặp tuần tự",
+      "Các nhánh tương tác có thể thực hiện song song",
+      "Một return message"
+    ],
+    "ans": 2,
+    "exp": "par biểu diễn concurrent interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Khi gặp tình huống liên quan đến par fragment, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một vòng lặp tuần tự",
+      "Các nhánh tương tác có thể thực hiện song song",
+      "Các nhánh loại trừ nhau",
+      "Một return message"
+    ],
+    "ans": 1,
+    "exp": "par biểu diễn concurrent interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Nếu đề thi hỏi về par fragment, đáp án nào nên được chọn?",
+    "options": [
+      "Các nhánh tương tác có thể thực hiện song song",
+      "Một vòng lặp tuần tự",
+      "Một return message",
+      "Các nhánh loại trừ nhau"
+    ],
+    "ans": 0,
+    "exp": "par biểu diễn concurrent interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Ý nghĩa đúng của par fragment trong bài toán hệ thống là gì?",
+    "options": [
+      "Các nhánh tương tác có thể thực hiện song song",
+      "Một vòng lặp tuần tự",
+      "Một return message",
+      "Các nhánh loại trừ nhau"
+    ],
+    "ans": 0,
+    "exp": "par biểu diễn concurrent interaction."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Synchronous message?",
+    "options": [
+      "Một FK",
+      "Thông điệp mà bên gọi thường chờ xử lý hoặc kết quả trước khi tiếp tục",
+      "Thông điệp không cần quan tâm phản hồi",
+      "Một UI component"
+    ],
+    "ans": 1,
+    "exp": "Synchronous call thường khiến caller chờ kết quả."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Khi gặp tình huống liên quan đến Synchronous message, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Thông điệp mà bên gọi thường chờ xử lý hoặc kết quả trước khi tiếp tục",
+      "Một FK",
+      "Thông điệp không cần quan tâm phản hồi",
+      "Một UI component"
+    ],
+    "ans": 0,
+    "exp": "Synchronous call thường khiến caller chờ kết quả."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Nếu đề thi hỏi về Synchronous message, đáp án nào nên được chọn?",
+    "options": [
+      "Một UI component",
+      "Thông điệp không cần quan tâm phản hồi",
+      "Một FK",
+      "Thông điệp mà bên gọi thường chờ xử lý hoặc kết quả trước khi tiếp tục"
+    ],
+    "ans": 3,
+    "exp": "Synchronous call thường khiến caller chờ kết quả."
+  },
+  {
+    "topic": "Sequence Diagram (Session 9-10)",
+    "q": "Ý nghĩa đúng của Synchronous message trong bài toán hệ thống là gì?",
+    "options": [
+      "Thông điệp mà bên gọi thường chờ xử lý hoặc kết quả trước khi tiếp tục",
+      "Thông điệp không cần quan tâm phản hồi",
+      "Một UI component",
+      "Một FK"
+    ],
+    "ans": 0,
+    "exp": "Synchronous call thường khiến caller chờ kết quả."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Consistency?",
+    "options": [
+      "Mỗi màn hình dùng một quy tắc khác nhau",
+      "Ẩn toàn bộ trạng thái hệ thống",
+      "Các thành phần tương tự có cách trình bày và hành vi nhất quán",
+      "Tăng số lượng bảng"
+    ],
+    "ans": 2,
+    "exp": "Consistency giúp người dùng học và sử dụng hệ thống dễ hơn."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Consistency, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Các thành phần tương tự có cách trình bày và hành vi nhất quán",
+      "Ẩn toàn bộ trạng thái hệ thống",
+      "Mỗi màn hình dùng một quy tắc khác nhau",
+      "Tăng số lượng bảng"
+    ],
+    "ans": 0,
+    "exp": "Consistency giúp người dùng học và sử dụng hệ thống dễ hơn."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Consistency, đáp án nào nên được chọn?",
+    "options": [
+      "Tăng số lượng bảng",
+      "Các thành phần tương tự có cách trình bày và hành vi nhất quán",
+      "Mỗi màn hình dùng một quy tắc khác nhau",
+      "Ẩn toàn bộ trạng thái hệ thống"
+    ],
+    "ans": 1,
+    "exp": "Consistency giúp người dùng học và sử dụng hệ thống dễ hơn."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Consistency trong bài toán hệ thống là gì?",
+    "options": [
+      "Các thành phần tương tự có cách trình bày và hành vi nhất quán",
+      "Mỗi màn hình dùng một quy tắc khác nhau",
+      "Tăng số lượng bảng",
+      "Ẩn toàn bộ trạng thái hệ thống"
+    ],
+    "ans": 0,
+    "exp": "Consistency giúp người dùng học và sử dụng hệ thống dễ hơn."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Feedback?",
+    "options": [
+      "Phản hồi cho người dùng biết kết quả hoặc trạng thái của thao tác",
+      "Tên actor",
+      "Mã nguồn backend",
+      "Khóa chính"
+    ],
+    "ans": 0,
+    "exp": "Feedback giúp người dùng biết hệ thống đã nhận và xử lý thao tác."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Feedback, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Tên actor",
+      "Phản hồi cho người dùng biết kết quả hoặc trạng thái của thao tác",
+      "Mã nguồn backend",
+      "Khóa chính"
+    ],
+    "ans": 1,
+    "exp": "Feedback giúp người dùng biết hệ thống đã nhận và xử lý thao tác."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Feedback, đáp án nào nên được chọn?",
+    "options": [
+      "Phản hồi cho người dùng biết kết quả hoặc trạng thái của thao tác",
+      "Mã nguồn backend",
+      "Khóa chính",
+      "Tên actor"
+    ],
+    "ans": 0,
+    "exp": "Feedback giúp người dùng biết hệ thống đã nhận và xử lý thao tác."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Feedback trong bài toán hệ thống là gì?",
+    "options": [
+      "Phản hồi cho người dùng biết kết quả hoặc trạng thái của thao tác",
+      "Khóa chính",
+      "Tên actor",
+      "Mã nguồn backend"
+    ],
+    "ans": 0,
+    "exp": "Feedback giúp người dùng biết hệ thống đã nhận và xử lý thao tác."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Empty State?",
+    "options": [
+      "Một bảng trung gian",
+      "Màn hình/trạng thái giải thích vì sao chưa có dữ liệu và hướng dẫn hành động phù hợp",
+      "Một animation bắt buộc",
+      "Một lỗi server 500"
+    ],
+    "ans": 1,
+    "exp": "Empty state nên cho biết trạng thái và bước tiếp theo."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Empty State, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Màn hình/trạng thái giải thích vì sao chưa có dữ liệu và hướng dẫn hành động phù hợp",
+      "Một lỗi server 500",
+      "Một bảng trung gian",
+      "Một animation bắt buộc"
+    ],
+    "ans": 0,
+    "exp": "Empty state nên cho biết trạng thái và bước tiếp theo."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Empty State, đáp án nào nên được chọn?",
+    "options": [
+      "Một bảng trung gian",
+      "Một lỗi server 500",
+      "Một animation bắt buộc",
+      "Màn hình/trạng thái giải thích vì sao chưa có dữ liệu và hướng dẫn hành động phù hợp"
+    ],
+    "ans": 3,
+    "exp": "Empty state nên cho biết trạng thái và bước tiếp theo."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Empty State trong bài toán hệ thống là gì?",
+    "options": [
+      "Một lỗi server 500",
+      "Một animation bắt buộc",
+      "Một bảng trung gian",
+      "Màn hình/trạng thái giải thích vì sao chưa có dữ liệu và hướng dẫn hành động phù hợp"
+    ],
+    "ans": 3,
+    "exp": "Empty state nên cho biết trạng thái và bước tiếp theo."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Accessibility?",
+    "options": [
+      "Thiết kế để nhiều nhóm người dùng, kể cả người có hạn chế, có thể sử dụng",
+      "Thiết kế chỉ cho màn hình desktop",
+      "Tăng tốc SQL",
+      "Tạo JWT"
+    ],
+    "ans": 0,
+    "exp": "Accessibility liên quan khả năng tiếp cận và sử dụng."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Accessibility, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Thiết kế chỉ cho màn hình desktop",
+      "Thiết kế để nhiều nhóm người dùng, kể cả người có hạn chế, có thể sử dụng",
+      "Tăng tốc SQL",
+      "Tạo JWT"
+    ],
+    "ans": 1,
+    "exp": "Accessibility liên quan khả năng tiếp cận và sử dụng."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Accessibility, đáp án nào nên được chọn?",
+    "options": [
+      "Tạo JWT",
+      "Thiết kế để nhiều nhóm người dùng, kể cả người có hạn chế, có thể sử dụng",
+      "Thiết kế chỉ cho màn hình desktop",
+      "Tăng tốc SQL"
+    ],
+    "ans": 1,
+    "exp": "Accessibility liên quan khả năng tiếp cận và sử dụng."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Accessibility trong bài toán hệ thống là gì?",
+    "options": [
+      "Tăng tốc SQL",
+      "Tạo JWT",
+      "Thiết kế chỉ cho màn hình desktop",
+      "Thiết kế để nhiều nhóm người dùng, kể cả người có hạn chế, có thể sử dụng"
+    ],
+    "ans": 3,
+    "exp": "Accessibility liên quan khả năng tiếp cận và sử dụng."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Responsive Design?",
+    "options": [
+      "Giao diện thích ứng với nhiều kích thước và thiết bị màn hình",
+      "Chỉ thiết kế cho desktop",
+      "Một phương thức HTTP",
+      "Một loại database"
+    ],
+    "ans": 0,
+    "exp": "Responsive giúp UI phù hợp mobile, tablet và desktop."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Responsive Design, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một loại database",
+      "Một phương thức HTTP",
+      "Giao diện thích ứng với nhiều kích thước và thiết bị màn hình",
+      "Chỉ thiết kế cho desktop"
+    ],
+    "ans": 2,
+    "exp": "Responsive giúp UI phù hợp mobile, tablet và desktop."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Responsive Design, đáp án nào nên được chọn?",
+    "options": [
+      "Một loại database",
+      "Giao diện thích ứng với nhiều kích thước và thiết bị màn hình",
+      "Một phương thức HTTP",
+      "Chỉ thiết kế cho desktop"
+    ],
+    "ans": 1,
+    "exp": "Responsive giúp UI phù hợp mobile, tablet và desktop."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Responsive Design trong bài toán hệ thống là gì?",
+    "options": [
+      "Một phương thức HTTP",
+      "Chỉ thiết kế cho desktop",
+      "Giao diện thích ứng với nhiều kích thước và thiết bị màn hình",
+      "Một loại database"
+    ],
+    "ans": 2,
+    "exp": "Responsive giúp UI phù hợp mobile, tablet và desktop."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Confirmation Dialog?",
+    "options": [
+      "Hộp thoại xác nhận phù hợp với hành động có hậu quả quan trọng hoặc khó hoàn tác",
+      "Tải CSS",
+      "Mọi thao tác mở menu",
+      "Hiển thị danh sách sản phẩm"
+    ],
+    "ans": 0,
+    "exp": "Confirmation đặc biệt hữu ích với thao tác như xóa dữ liệu."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Khi gặp tình huống liên quan đến Confirmation Dialog, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Tải CSS",
+      "Mọi thao tác mở menu",
+      "Hộp thoại xác nhận phù hợp với hành động có hậu quả quan trọng hoặc khó hoàn tác",
+      "Hiển thị danh sách sản phẩm"
+    ],
+    "ans": 2,
+    "exp": "Confirmation đặc biệt hữu ích với thao tác như xóa dữ liệu."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Nếu đề thi hỏi về Confirmation Dialog, đáp án nào nên được chọn?",
+    "options": [
+      "Hộp thoại xác nhận phù hợp với hành động có hậu quả quan trọng hoặc khó hoàn tác",
+      "Hiển thị danh sách sản phẩm",
+      "Tải CSS",
+      "Mọi thao tác mở menu"
+    ],
+    "ans": 0,
+    "exp": "Confirmation đặc biệt hữu ích với thao tác như xóa dữ liệu."
+  },
+  {
+    "topic": "UI/UX Wireframe (Session 13-14)",
+    "q": "Ý nghĩa đúng của Confirmation Dialog trong bài toán hệ thống là gì?",
+    "options": [
+      "Hộp thoại xác nhận phù hợp với hành động có hậu quả quan trọng hoặc khó hoàn tác",
+      "Tải CSS",
+      "Hiển thị danh sách sản phẩm",
+      "Mọi thao tác mở menu"
+    ],
+    "ans": 0,
+    "exp": "Confirmation đặc biệt hữu ích với thao tác như xóa dữ liệu."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Primary Key?",
+    "options": [
+      "Một giao diện người dùng",
+      "Khóa định danh duy nhất mỗi bản ghi trong bảng",
+      "Cột dùng để lưu ảnh",
+      "Một business rule"
+    ],
+    "ans": 1,
+    "exp": "PK đảm bảo mỗi row có định danh duy nhất."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Primary Key, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một giao diện người dùng",
+      "Khóa định danh duy nhất mỗi bản ghi trong bảng",
+      "Cột dùng để lưu ảnh",
+      "Một business rule"
+    ],
+    "ans": 1,
+    "exp": "PK đảm bảo mỗi row có định danh duy nhất."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Primary Key, đáp án nào nên được chọn?",
+    "options": [
+      "Một giao diện người dùng",
+      "Một business rule",
+      "Cột dùng để lưu ảnh",
+      "Khóa định danh duy nhất mỗi bản ghi trong bảng"
+    ],
+    "ans": 3,
+    "exp": "PK đảm bảo mỗi row có định danh duy nhất."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Primary Key trong bài toán hệ thống là gì?",
+    "options": [
+      "Khóa định danh duy nhất mỗi bản ghi trong bảng",
+      "Một giao diện người dùng",
+      "Một business rule",
+      "Cột dùng để lưu ảnh"
+    ],
+    "ans": 0,
+    "exp": "PK đảm bảo mỗi row có định danh duy nhất."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Foreign Key?",
+    "options": [
+      "Tên của API endpoint",
+      "Một thuộc tính chỉ dùng cho CSS",
+      "Khóa tham chiếu đến khóa của bảng khác để tạo liên kết và đảm bảo toàn vẹn tham chiếu",
+      "Một khóa chỉ dùng để tăng tốc CPU"
+    ],
+    "ans": 2,
+    "exp": "FK thể hiện quan hệ giữa các bảng."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Foreign Key, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một thuộc tính chỉ dùng cho CSS",
+      "Khóa tham chiếu đến khóa của bảng khác để tạo liên kết và đảm bảo toàn vẹn tham chiếu",
+      "Tên của API endpoint",
+      "Một khóa chỉ dùng để tăng tốc CPU"
+    ],
+    "ans": 1,
+    "exp": "FK thể hiện quan hệ giữa các bảng."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Foreign Key, đáp án nào nên được chọn?",
+    "options": [
+      "Tên của API endpoint",
+      "Một khóa chỉ dùng để tăng tốc CPU",
+      "Một thuộc tính chỉ dùng cho CSS",
+      "Khóa tham chiếu đến khóa của bảng khác để tạo liên kết và đảm bảo toàn vẹn tham chiếu"
+    ],
+    "ans": 3,
+    "exp": "FK thể hiện quan hệ giữa các bảng."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Foreign Key trong bài toán hệ thống là gì?",
+    "options": [
+      "Một khóa chỉ dùng để tăng tốc CPU",
+      "Một thuộc tính chỉ dùng cho CSS",
+      "Khóa tham chiếu đến khóa của bảng khác để tạo liên kết và đảm bảo toàn vẹn tham chiếu",
+      "Tên của API endpoint"
+    ],
+    "ans": 2,
+    "exp": "FK thể hiện quan hệ giữa các bảng."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Quan hệ 1:N?",
+    "options": [
+      "Hai phía bắt buộc phải là N:N",
+      "Không cần khóa ngoại",
+      "Một bản ghi ở phía 1 có thể liên quan nhiều bản ghi ở phía N",
+      "Hai phía luôn có đúng một bản ghi"
+    ],
+    "ans": 2,
+    "exp": "Trong 1:N, FK thường nằm ở phía N."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Quan hệ 1:N, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Hai phía bắt buộc phải là N:N",
+      "Không cần khóa ngoại",
+      "Hai phía luôn có đúng một bản ghi",
+      "Một bản ghi ở phía 1 có thể liên quan nhiều bản ghi ở phía N"
+    ],
+    "ans": 3,
+    "exp": "Trong 1:N, FK thường nằm ở phía N."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Quan hệ 1:N, đáp án nào nên được chọn?",
+    "options": [
+      "Hai phía bắt buộc phải là N:N",
+      "Không cần khóa ngoại",
+      "Hai phía luôn có đúng một bản ghi",
+      "Một bản ghi ở phía 1 có thể liên quan nhiều bản ghi ở phía N"
+    ],
+    "ans": 3,
+    "exp": "Trong 1:N, FK thường nằm ở phía N."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Quan hệ 1:N trong bài toán hệ thống là gì?",
+    "options": [
+      "Một bản ghi ở phía 1 có thể liên quan nhiều bản ghi ở phía N",
+      "Hai phía luôn có đúng một bản ghi",
+      "Hai phía bắt buộc phải là N:N",
+      "Không cần khóa ngoại"
+    ],
+    "ans": 0,
+    "exp": "Trong 1:N, FK thường nằm ở phía N."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Junction Table?",
+    "options": [
+      "Bảng thay thế mọi entity",
+      "Bảng chỉ chứa log server",
+      "Bảng trung gian dùng để chuyển quan hệ N:N thành hai quan hệ 1:N",
+      "Bảng lưu CSS"
+    ],
+    "ans": 2,
+    "exp": "Junction table thường chứa hai FK và có thể có thuộc tính của quan hệ."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Junction Table, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Bảng chỉ chứa log server",
+      "Bảng thay thế mọi entity",
+      "Bảng trung gian dùng để chuyển quan hệ N:N thành hai quan hệ 1:N",
+      "Bảng lưu CSS"
+    ],
+    "ans": 2,
+    "exp": "Junction table thường chứa hai FK và có thể có thuộc tính của quan hệ."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Junction Table, đáp án nào nên được chọn?",
+    "options": [
+      "Bảng thay thế mọi entity",
+      "Bảng chỉ chứa log server",
+      "Bảng lưu CSS",
+      "Bảng trung gian dùng để chuyển quan hệ N:N thành hai quan hệ 1:N"
+    ],
+    "ans": 3,
+    "exp": "Junction table thường chứa hai FK và có thể có thuộc tính của quan hệ."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Junction Table trong bài toán hệ thống là gì?",
+    "options": [
+      "Bảng trung gian dùng để chuyển quan hệ N:N thành hai quan hệ 1:N",
+      "Bảng lưu CSS",
+      "Bảng thay thế mọi entity",
+      "Bảng chỉ chứa log server"
+    ],
+    "ans": 0,
+    "exp": "Junction table thường chứa hai FK và có thể có thuộc tính của quan hệ."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Derived Attribute?",
+    "options": [
+      "Thuộc tính có thể tính/suy ra từ dữ liệu khác",
+      "Thuộc tính không thể thay đổi",
+      "Thuộc tính luôn là khóa chính",
+      "Thuộc tính chỉ chứa mật khẩu"
+    ],
+    "ans": 0,
+    "exp": "Derived data cần cân nhắc không lưu trùng nếu có thể tính đáng tin cậy."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Derived Attribute, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Thuộc tính luôn là khóa chính",
+      "Thuộc tính không thể thay đổi",
+      "Thuộc tính có thể tính/suy ra từ dữ liệu khác",
+      "Thuộc tính chỉ chứa mật khẩu"
+    ],
+    "ans": 2,
+    "exp": "Derived data cần cân nhắc không lưu trùng nếu có thể tính đáng tin cậy."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Derived Attribute, đáp án nào nên được chọn?",
+    "options": [
+      "Thuộc tính có thể tính/suy ra từ dữ liệu khác",
+      "Thuộc tính không thể thay đổi",
+      "Thuộc tính luôn là khóa chính",
+      "Thuộc tính chỉ chứa mật khẩu"
+    ],
+    "ans": 0,
+    "exp": "Derived data cần cân nhắc không lưu trùng nếu có thể tính đáng tin cậy."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Derived Attribute trong bài toán hệ thống là gì?",
+    "options": [
+      "Thuộc tính có thể tính/suy ra từ dữ liệu khác",
+      "Thuộc tính không thể thay đổi",
+      "Thuộc tính luôn là khóa chính",
+      "Thuộc tính chỉ chứa mật khẩu"
+    ],
+    "ans": 0,
+    "exp": "Derived data cần cân nhắc không lưu trùng nếu có thể tính đáng tin cậy."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Composite Primary Key?",
+    "options": [
+      "Một khóa ngoại đơn",
+      "Khóa chỉ có tên bảng",
+      "Khóa được tạo từ hai hoặc nhiều cột",
+      "Khóa chỉ có một cột id"
+    ],
+    "ans": 2,
+    "exp": "Composite PK phù hợp khi sự duy nhất nằm ở tổ hợp nhiều cột."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến Composite Primary Key, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Khóa được tạo từ hai hoặc nhiều cột",
+      "Khóa chỉ có một cột id",
+      "Khóa chỉ có tên bảng",
+      "Một khóa ngoại đơn"
+    ],
+    "ans": 0,
+    "exp": "Composite PK phù hợp khi sự duy nhất nằm ở tổ hợp nhiều cột."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về Composite Primary Key, đáp án nào nên được chọn?",
+    "options": [
+      "Khóa chỉ có một cột id",
+      "Khóa chỉ có tên bảng",
+      "Khóa được tạo từ hai hoặc nhiều cột",
+      "Một khóa ngoại đơn"
+    ],
+    "ans": 2,
+    "exp": "Composite PK phù hợp khi sự duy nhất nằm ở tổ hợp nhiều cột."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của Composite Primary Key trong bài toán hệ thống là gì?",
+    "options": [
+      "Một khóa ngoại đơn",
+      "Khóa chỉ có một cột id",
+      "Khóa được tạo từ hai hoặc nhiều cột",
+      "Khóa chỉ có tên bảng"
+    ],
+    "ans": 2,
+    "exp": "Composite PK phù hợp khi sự duy nhất nằm ở tổ hợp nhiều cột."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về 3NF?",
+    "options": [
+      "Chuẩn để viết Sequence Diagram",
+      "Chuẩn để tăng kích thước ảnh",
+      "Chuẩn để thiết kế màu giao diện",
+      "Chuẩn hóa nhằm loại bỏ phụ thuộc bắc cầu giữa các thuộc tính không khóa"
+    ],
+    "ans": 3,
+    "exp": "3NF giúp giảm dư thừa do transitive dependency."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Khi gặp tình huống liên quan đến 3NF, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Chuẩn để viết Sequence Diagram",
+      "Chuẩn để thiết kế màu giao diện",
+      "Chuẩn để tăng kích thước ảnh",
+      "Chuẩn hóa nhằm loại bỏ phụ thuộc bắc cầu giữa các thuộc tính không khóa"
+    ],
+    "ans": 3,
+    "exp": "3NF giúp giảm dư thừa do transitive dependency."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Nếu đề thi hỏi về 3NF, đáp án nào nên được chọn?",
+    "options": [
+      "Chuẩn để viết Sequence Diagram",
+      "Chuẩn để tăng kích thước ảnh",
+      "Chuẩn hóa nhằm loại bỏ phụ thuộc bắc cầu giữa các thuộc tính không khóa",
+      "Chuẩn để thiết kế màu giao diện"
+    ],
+    "ans": 2,
+    "exp": "3NF giúp giảm dư thừa do transitive dependency."
+  },
+  {
+    "topic": "ERD & CSDL (Session 15-16)",
+    "q": "Ý nghĩa đúng của 3NF trong bài toán hệ thống là gì?",
+    "options": [
+      "Chuẩn để tăng kích thước ảnh",
+      "Chuẩn để viết Sequence Diagram",
+      "Chuẩn hóa nhằm loại bỏ phụ thuộc bắc cầu giữa các thuộc tính không khóa",
+      "Chuẩn để thiết kế màu giao diện"
+    ],
+    "ans": 2,
+    "exp": "3NF giúp giảm dư thừa do transitive dependency."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về SRS?",
+    "options": [
+      "Một loại database",
+      "Tài liệu đặc tả các yêu cầu phần mềm làm cơ sở cho phát triển và kiểm thử",
+      "Một loại UML actor",
+      "Một file CSS"
+    ],
+    "ans": 1,
+    "exp": "SRS ghi nhận phạm vi, chức năng, NFR và các ràng buộc liên quan."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Khi gặp tình huống liên quan đến SRS, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Một loại database",
+      "Một loại UML actor",
+      "Một file CSS",
+      "Tài liệu đặc tả các yêu cầu phần mềm làm cơ sở cho phát triển và kiểm thử"
+    ],
+    "ans": 3,
+    "exp": "SRS ghi nhận phạm vi, chức năng, NFR và các ràng buộc liên quan."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Nếu đề thi hỏi về SRS, đáp án nào nên được chọn?",
+    "options": [
+      "Một loại UML actor",
+      "Một loại database",
+      "Một file CSS",
+      "Tài liệu đặc tả các yêu cầu phần mềm làm cơ sở cho phát triển và kiểm thử"
+    ],
+    "ans": 3,
+    "exp": "SRS ghi nhận phạm vi, chức năng, NFR và các ràng buộc liên quan."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Ý nghĩa đúng của SRS trong bài toán hệ thống là gì?",
+    "options": [
+      "Tài liệu đặc tả các yêu cầu phần mềm làm cơ sở cho phát triển và kiểm thử",
+      "Một loại UML actor",
+      "Một file CSS",
+      "Một loại database"
+    ],
+    "ans": 0,
+    "exp": "SRS ghi nhận phạm vi, chức năng, NFR và các ràng buộc liên quan."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Service Layer?",
+    "options": [
+      "Tầng chỉ lưu file ảnh",
+      "Tầng chỉ chứa actor",
+      "Tầng chỉ chứa CSS",
+      "Tầng chứa/điều phối logic nghiệp vụ trong kiến trúc phân tầng"
+    ],
+    "ans": 3,
+    "exp": "Service thường xử lý business logic và orchestration."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Khi gặp tình huống liên quan đến Service Layer, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Tầng chỉ lưu file ảnh",
+      "Tầng chứa/điều phối logic nghiệp vụ trong kiến trúc phân tầng",
+      "Tầng chỉ chứa CSS",
+      "Tầng chỉ chứa actor"
+    ],
+    "ans": 1,
+    "exp": "Service thường xử lý business logic và orchestration."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Nếu đề thi hỏi về Service Layer, đáp án nào nên được chọn?",
+    "options": [
+      "Tầng chỉ lưu file ảnh",
+      "Tầng chỉ chứa actor",
+      "Tầng chỉ chứa CSS",
+      "Tầng chứa/điều phối logic nghiệp vụ trong kiến trúc phân tầng"
+    ],
+    "ans": 3,
+    "exp": "Service thường xử lý business logic và orchestration."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Ý nghĩa đúng của Service Layer trong bài toán hệ thống là gì?",
+    "options": [
+      "Tầng chứa/điều phối logic nghiệp vụ trong kiến trúc phân tầng",
+      "Tầng chỉ lưu file ảnh",
+      "Tầng chỉ chứa CSS",
+      "Tầng chỉ chứa actor"
+    ],
+    "ans": 0,
+    "exp": "Service thường xử lý business logic và orchestration."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Repository Layer?",
+    "options": [
+      "Tầng thiết kế wireframe",
+      "Tầng chịu trách nhiệm truy cập và lưu trữ dữ liệu",
+      "Tầng xác định stakeholder",
+      "Tầng viết acceptance criteria"
+    ],
+    "ans": 1,
+    "exp": "Repository/DAO trừu tượng hóa persistence."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Khi gặp tình huống liên quan đến Repository Layer, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Tầng chịu trách nhiệm truy cập và lưu trữ dữ liệu",
+      "Tầng xác định stakeholder",
+      "Tầng thiết kế wireframe",
+      "Tầng viết acceptance criteria"
+    ],
+    "ans": 0,
+    "exp": "Repository/DAO trừu tượng hóa persistence."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Nếu đề thi hỏi về Repository Layer, đáp án nào nên được chọn?",
+    "options": [
+      "Tầng xác định stakeholder",
+      "Tầng chịu trách nhiệm truy cập và lưu trữ dữ liệu",
+      "Tầng thiết kế wireframe",
+      "Tầng viết acceptance criteria"
+    ],
+    "ans": 1,
+    "exp": "Repository/DAO trừu tượng hóa persistence."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Ý nghĩa đúng của Repository Layer trong bài toán hệ thống là gì?",
+    "options": [
+      "Tầng chịu trách nhiệm truy cập và lưu trữ dữ liệu",
+      "Tầng xác định stakeholder",
+      "Tầng viết acceptance criteria",
+      "Tầng thiết kế wireframe"
+    ],
+    "ans": 0,
+    "exp": "Repository/DAO trừu tượng hóa persistence."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về Authentication vs Authorization?",
+    "options": [
+      "Authorization là mã hóa mật khẩu",
+      "Authentication xác định danh tính; Authorization xác định quyền được phép thực hiện",
+      "Hai khái niệm luôn giống nhau",
+      "Authentication là thiết kế UI; Authorization là thiết kế DB"
+    ],
+    "ans": 1,
+    "exp": "AuthN trả lời bạn là ai; AuthZ trả lời bạn được làm gì."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Khi gặp tình huống liên quan đến Authentication vs Authorization, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Hai khái niệm luôn giống nhau",
+      "Authorization là mã hóa mật khẩu",
+      "Authentication là thiết kế UI; Authorization là thiết kế DB",
+      "Authentication xác định danh tính; Authorization xác định quyền được phép thực hiện"
+    ],
+    "ans": 3,
+    "exp": "AuthN trả lời bạn là ai; AuthZ trả lời bạn được làm gì."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Nếu đề thi hỏi về Authentication vs Authorization, đáp án nào nên được chọn?",
+    "options": [
+      "Authentication là thiết kế UI; Authorization là thiết kế DB",
+      "Authorization là mã hóa mật khẩu",
+      "Hai khái niệm luôn giống nhau",
+      "Authentication xác định danh tính; Authorization xác định quyền được phép thực hiện"
+    ],
+    "ans": 3,
+    "exp": "AuthN trả lời bạn là ai; AuthZ trả lời bạn được làm gì."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Ý nghĩa đúng của Authentication vs Authorization trong bài toán hệ thống là gì?",
+    "options": [
+      "Authorization là mã hóa mật khẩu",
+      "Authentication xác định danh tính; Authorization xác định quyền được phép thực hiện",
+      "Authentication là thiết kế UI; Authorization là thiết kế DB",
+      "Hai khái niệm luôn giống nhau"
+    ],
+    "ans": 1,
+    "exp": "AuthN trả lời bạn là ai; AuthZ trả lời bạn được làm gì."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Trong phân tích và thiết kế hệ thống, phát biểu nào đúng về HTTP 201 Created?",
+    "options": [
+      "Mã cho không tìm thấy resource",
+      "Mã cho lỗi server",
+      "Mã cho request chưa xác thực",
+      "Mã phản hồi thường dùng khi một resource mới được tạo thành công"
+    ],
+    "ans": 3,
+    "exp": "201 phù hợp với create thành công."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Khi gặp tình huống liên quan đến HTTP 201 Created, lựa chọn nào phù hợp nhất?",
+    "options": [
+      "Mã phản hồi thường dùng khi một resource mới được tạo thành công",
+      "Mã cho request chưa xác thực",
+      "Mã cho không tìm thấy resource",
+      "Mã cho lỗi server"
+    ],
+    "ans": 0,
+    "exp": "201 phù hợp với create thành công."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Nếu đề thi hỏi về HTTP 201 Created, đáp án nào nên được chọn?",
+    "options": [
+      "Mã phản hồi thường dùng khi một resource mới được tạo thành công",
+      "Mã cho lỗi server",
+      "Mã cho không tìm thấy resource",
+      "Mã cho request chưa xác thực"
+    ],
+    "ans": 0,
+    "exp": "201 phù hợp với create thành công."
+  },
+  {
+    "topic": "SRS & Kiến trúc (Session 17-18)",
+    "q": "Ý nghĩa đúng của HTTP 201 Created trong bài toán hệ thống là gì?",
+    "options": [
+      "Mã cho lỗi server",
+      "Mã phản hồi thường dùng khi một resource mới được tạo thành công",
+      "Mã cho request chưa xác thực",
+      "Mã cho không tìm thấy resource"
+    ],
+    "ans": 1,
+    "exp": "201 phù hợp với create thành công."
+  }
+];
+      const questions = [...baseQuestions, ...EXTRA_QUESTIONS];
+
+      let currentQuestions = [];
+      let userAnswers = {};
+      let currentIndex = 0;
+      let sessionQuestions = [];
+
+      const topicLabels = {
+        "Tổng quan & Khảo sát (Session 1-4)": "Session 01-04: Tổng quan & Khảo sát",
+        "Use Case & Activity (Session 5-6)": "Session 05-06: Use Case & Activity",
+        "Class Diagram (Session 7-8)": "Session 07-08: Class Diagram",
+        "Sequence Diagram (Session 9-10)": "Session 09-10: Sequence Diagram",
+        "UI/UX Wireframe (Session 13-14)": "Session 13-14: UI/UX Wireframe",
+        "ERD & CSDL (Session 15-16)": "Session 15-16: ERD & CSDL",
+        "SRS & Kiến trúc (Session 17-18)": "Session 17-18: SRS & Kiến trúc"
+      };
+
+      function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function startQuiz() {
+        const filter = document.getElementById("filterTopic").value;
+        const count = document.getElementById("quizCount").value;
+        const pool = filter === "all" ? [...questions] : questions.filter(q => q.topic === filter);
+        const n = count === "all" ? pool.length : Math.min(Number(count), pool.length);
+        sessionQuestions = shuffle(pool).slice(0, n);
+        currentQuestions = sessionQuestions;
+        userAnswers = {};
+        currentIndex = 0;
+        document.getElementById("resultBox").style.display = "none";
+        document.getElementById("quizCard").style.display = "block";
+        renderQuestion();
+      }
+
+      function renderQuestion() {
+        const q = currentQuestions[currentIndex];
+        if (!q) return;
+        document.getElementById("qNum").textContent = `Câu ${currentIndex + 1}/${currentQuestions.length}`;
+        document.getElementById("qTopic").textContent = topicLabels[q.topic] || q.topic;
+        document.getElementById("qTitle").textContent = q.q;
+        const options = document.getElementById("options");
+        options.innerHTML = "";
+        q.options.forEach((opt, i) => {
+          const b = document.createElement("button");
+          b.className = "opt-btn";
+          b.innerHTML = `<strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(opt)}`;
+          b.onclick = () => selectAnswer(i);
+          options.appendChild(b);
+        });
+        const answered = userAnswers[currentIndex];
+        if (answered !== undefined) showAnswer(answered);
+        document.getElementById("prevBtn").disabled = currentIndex === 0;
+        document.getElementById("nextBtn").disabled = currentIndex === currentQuestions.length - 1;
+        document.getElementById("nextBtn").textContent = currentIndex === currentQuestions.length - 1 ? "Xem kết quả" : "Câu tiếp →";
+        document.getElementById("progressBar").style.width = `${((currentIndex + 1) / currentQuestions.length) * 100}%`;
+        updateScore();
+      }
+
+      function escapeHtml(s) {
+        return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
+
+      function selectAnswer(i) {
+        if (userAnswers[currentIndex] !== undefined) return;
+        userAnswers[currentIndex] = i;
+        showAnswer(i);
+        updateScore();
+      }
+
+      function showAnswer(selected) {
+        const q = currentQuestions[currentIndex];
+        document.querySelectorAll(".opt-btn").forEach((b, i) => {
+          b.disabled = true;
+          if (i === q.ans) b.classList.add("correct");
+          if (i === selected && selected !== q.ans) b.classList.add("wrong");
+        });
+        const exp = document.getElementById("explanation");
+        exp.innerHTML = `<strong>${selected === q.ans ? "✓ Chính xác!" : "✗ Chưa đúng."}</strong> ${escapeHtml(q.exp)}`;
+        exp.classList.add("show");
+      }
+
+      function nextQuestion() {
+        if (currentIndex < currentQuestions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+          window.scrollTo({top: 0, behavior: "smooth"});
+        } else showResult();
+      }
+
+      function prevQuestion() {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+          window.scrollTo({top: 0, behavior: "smooth"});
+        }
+      }
+
+      function updateScore() {
+        let correct = 0, answered = 0;
+        currentQuestions.forEach((q, i) => {
+          if (userAnswers[i] !== undefined) {
+            answered++;
+            if (userAnswers[i] === q.ans) correct++;
+          }
+        });
+        document.getElementById("scoreDisplay").textContent = `${correct} đúng · ${answered}/${currentQuestions.length}`;
+      }
+
+      function showResult() {
+        let correct = 0, answered = 0;
+        currentQuestions.forEach((q, i) => {
+          if (userAnswers[i] !== undefined) {
+            answered++;
+            if (userAnswers[i] === q.ans) correct++;
+          }
+        });
+        const pct = Math.round(correct / currentQuestions.length * 100);
+        document.getElementById("quizCard").style.display = "none";
+        document.getElementById("resultBox").style.display = "block";
+        document.getElementById("resultScore").textContent = `${correct}/${currentQuestions.length}`;
+        document.getElementById("resultText").textContent = `${answered < currentQuestions.length ? `Bạn mới trả lời ${answered} câu. ` : ""}Tỷ lệ đúng: ${pct}%.`;
+        document.getElementById("resultCorrect").textContent = correct;
+        document.getElementById("resultWrong").textContent = answered - correct;
+        document.getElementById("resultPct").textContent = pct + "%";
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+
+      function resetQuiz() { startQuiz(); }
+      function init() {
+        document.getElementById("totalQuestions").textContent = questions.length;
+        startQuiz();
+      }
+
+      document.getElementById("filterTopic").addEventListener("change", startQuiz);
+      document.getElementById("quizCount").addEventListener("change", startQuiz);
+      document.getElementById("resetBtn").addEventListener("click", resetQuiz);
+      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+      document.getElementById("prevBtn").addEventListener("click", prevQuestion);
+      document.getElementById("restartBtn").addEventListener("click", startQuiz);
+      document.addEventListener("keydown", e => {
+        if (["a","b","c","d"].includes(e.key.toLowerCase())) selectAnswer(e.key.toLowerCase().charCodeAt(0)-97);
+        if (e.key === "ArrowRight") nextQuestion();
+        if (e.key === "ArrowLeft") prevQuestion();
+      });
+      init();
+</script>
+</body>
+</html>
